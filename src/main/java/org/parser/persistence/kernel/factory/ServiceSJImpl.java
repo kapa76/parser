@@ -26,7 +26,6 @@ import java.io.IOException;
 import java.util.*;
 
 @Service
-@Repository
 @Transactional
 public class ServiceSJImpl implements ServiceSJ {
 
@@ -35,11 +34,8 @@ public class ServiceSJImpl implements ServiceSJ {
     private final String SJ_INIT_URL = "http://www.superjob.ru/vacancy/search_form.html";
 
 
-
     @Autowired
-    @Qualifier(value="city")
     public CityRepository cityService;
-
 
     /*
     @Autowired
@@ -125,14 +121,14 @@ public class ServiceSJImpl implements ServiceSJ {
     private VacancyRepository vacancyService;
     @Autowired
     private WorkTypeRepository workTypeService;
-                   */
+               */
 
     private Site siteDefault = null;
 
     @Override
     public void init() {
-        cityService.create(new City("asdasd"));
-
+        //cityService.create(new City("asdasd"));
+        //new CityRepository()
         loadReferencesSJ(SJ_LOAD_PROPERTIES, SiteEnum.superjob);
 
     }

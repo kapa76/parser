@@ -14,7 +14,7 @@
     <!--
     <context:component-scan base-package="org.parser"/>
     -->
-    <mvc:annotation-driven/>
+    <!-- <mvc:annotation-driven/>  -->
     <tx:annotation-driven/>
 
     <context:component-scan base-package="org.parser.persistence.model"/>
@@ -23,18 +23,7 @@
     <context:component-scan base-package="org.parser.persistence.kernel.factory"/>
     <context:component-scan base-package="org.parser.service"/>
 
-
-    <!-- <bean id="cityService" class="org.parser.persistence.repository.hibernate.CityRepository"/>   -->
-    <!--************************************************************************************************************************-->
-
     <context:property-placeholder location="classpath:persistence.properties"/>
-    <!--
-    <bean id="agencyRepository"  class="org.parser.persistence.repository.hibernate.AgencyRepository"/>
-
-    <bean id="serviceSJ"  class="org.parser.persistence.kernel.factory.ServiceSJImpl">
-        <property name="agencyService" ref="agencyRepository"/>
-    </bean>
-    -->
 
     <bean id="transactionManager" class="org.springframework.orm.hibernate4.HibernateTransactionManager">
         <property name="sessionFactory" ref="sessionFactory"/>
