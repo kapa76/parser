@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+            http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+            http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.0.xsd
+            http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
+
+    <!-- <context:component-scan base-package="org.parser.persistence.kernel"/> -->
+
+    <!--
+    <context:component-scan base-package="org.parser"/>
+    -->
+    <mvc:annotation-driven/>
+    <tx:annotation-driven/>
+
+    <context:component-scan base-package="org.parser.persistence.model"/>
+    <context:component-scan base-package="org.parser.persistence.repository"/>
+    <!-- <context:component-scan base-package="org.parser.persistence.repository.hibernate"/>   -->
+    <context:component-scan base-package="org.parser.persistence.kernel.factory"/>
+    <context:component-scan base-package="org.parser.service"/>
+
+
+    <!-- <bean id="cityService" class="org.parser.persistence.repository.hibernate.CityRepository"/>   -->
+    <!--************************************************************************************************************************-->
+
+    <context:property-placeholder location="classpath:persistence.properties"/>
+    <!--
+    <bean id="agencyRepository"  class="org.parser.persistence.repository.hibernate.AgencyRepository"/>
+
+    <bean id="serviceSJ"  class="org.parser.persistence.kernel.factory.ServiceSJImpl">
+        <property name="agencyService" ref="agencyRepository"/>
+    </bean>
+    -->
+
+    <bean id="transactionManager" class="org.springframework.orm.hibernate4.HibernateTransactionManager">
+        <property name="sessionFactory" ref="sessionFactory"/>
+    </bean>
+
+    <bean id="hibernateTemplate" class="org.springframework.orm.hibernate4.HibernateTemplate">
+        <property name="sessionFactory" ref="sessionFactory"/>
+    </bean>
+
+    <bean id="sessionFactory" class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
+        <qualifier value="main"/>
+        <property name="dataSource" ref="dataSource"/>
+        <property name="annotatedClasses">
+            <list>
+                <value>org.parser.persistence.model.City</value>
+                <value>org.parser.persistence.model.Agency</value>
+                <value>org.parser.persistence.model.Site</value>
+
+            </list>
+        </property>
+
+        <property name="hibernateProperties">
+            <props>
+                <prop key="hibernate.dialect">${hibernate.dialect}</prop>
+                <prop key="hibernate.show_sql">true</prop>
+                <prop key="hibernate.cache.use_structured_entries">true</prop>
+                <prop key="hibernate.generate_statistics">true</prop>
+            </props>
+        </property>
+    </bean>
+
+    <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+        <property name="driverClassName" value="${jdbc.driverClassName}"/>
+        <property name="url" value="${jdbc.url}"/>
+        <property name="username" value="${jdbc.user}"/>
+        <property name="password" value="${jdbc.pass}"/>
+    </bean>
+
+    <bean id="persistenceExceptionTranslationPostProcessor"
+          class="org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor"/>
+
+    <bean id="persistenceUnitManager" class="org.springframework.orm.jpa.persistenceunit.DefaultPersistenceUnitManager">
+        <property name="defaultDataSource" ref="dataSource"/>
+    </bean>
+
+</beans>
