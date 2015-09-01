@@ -1,8 +1,10 @@
 package org.parser.persistence.repository.hibernate;
 
 
-import org.parser.persistence.model.*;
-import org.hibernate.Session; import org.hibernate.Transaction; import org.springframework.stereotype.Repository;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
+import org.parser.persistence.model.PublishedResume;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
@@ -25,7 +27,11 @@ public class PublishedResumeRepository extends AbstractRepo {
 
 
     public void create(PublishedResume entity) {
-        Session session = sessionFactory.openSession();         Transaction tx = session.beginTransaction();         session.save(entity);         tx.commit();         session.close();
+        Session session = sessionFactory.openSession();
+        Transaction tx = session.beginTransaction();
+        session.save(entity);
+        tx.commit();
+        session.close();
     }
 
 
@@ -39,6 +45,11 @@ public class PublishedResumeRepository extends AbstractRepo {
 
 
     public void deleteById(long entityId) {
+
+    }
+
+    public PublishedResume findOne(String name, long id) {
+        return (PublishedResume) sessionFactory.getCurrentSession().createQuery("from published_resume p where p.name = :name and p.site.id = :id ").setParameter("id", id).setParameter("name", name).uniqueResult();
 
     }
 }

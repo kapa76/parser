@@ -6,9 +6,24 @@ import java.sql.Date;
 
 @Entity(name = "queuer")
 @Table
-public class Queuer implements Serializable{
+public class Queuer implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "id")
+    private long id;
+    @Column(name = "name")
+    private String name;
+    @Column(name = "date_from")
+    private Date dateFrom;
+    @Column(name = "date_to")
+    private Date dateTo;
+    @Column(name = "status")
+    private String status;
+    @ManyToOne(targetEntity = Resume.class, fetch = FetchType.EAGER)
+    @JoinColumn(name = "id_resume")
+    private Resume resume;
 
     public Queuer() {
         super();
@@ -18,27 +33,6 @@ public class Queuer implements Serializable{
         super();
         this.name = name;
     }
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "id")
-    private long id;
-
-    @Column(name = "name")
-    private String name;
-
-    @Column(name = "date_from")
-    private Date dateFrom;
-
-    @Column(name = "date_to")
-    private Date dateTo;
-
-    @Column(name = "status")
-    private String status;
-
-    @ManyToOne(targetEntity = Resume.class, fetch = FetchType.EAGER)
-    @JoinColumn(name = "id_resume")
-    private Resume resume;
 
     public long getId() {
         return id;

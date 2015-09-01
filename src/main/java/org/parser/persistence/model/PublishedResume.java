@@ -7,6 +7,15 @@ import java.io.Serializable;
 public class PublishedResume implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "id")
+    private long id;
+    @Column(name = "name")
+    private String name;
+    @ManyToOne(targetEntity = Site.class, fetch = FetchType.EAGER)
+    @JoinColumn(name = "id_site")
+    private Site site;
 
     public PublishedResume() {
         super();
@@ -16,18 +25,6 @@ public class PublishedResume implements Serializable {
         super();
         this.name = name;
     }
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "id")
-    private long id;
-
-    @Column(name = "name")
-    private String name;
-
-    @ManyToOne(targetEntity = Site.class, fetch = FetchType.EAGER)
-    @JoinColumn(name = "id_site")
-    private Site site;
 
     public PublishedResume(String value, Site siteDefault) {
         super();

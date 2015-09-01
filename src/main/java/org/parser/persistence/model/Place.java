@@ -4,11 +4,22 @@ import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Set;
 
-@Entity (name="place")
+@Entity(name = "place")
 @Table
 public class Place implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "id")
+    private long id;
+    @Column(name = "name")
+    private String name;
+    @OneToMany(mappedBy = "place", fetch = FetchType.EAGER)
+    private Set<PlaceDetail> placeDetail;
+    @ManyToOne(targetEntity = Resume.class, fetch = FetchType.EAGER)
+    @JoinColumn(name = "id_resume")
+    private Resume resume;
 
     public Place() {
         super();
@@ -18,22 +29,6 @@ public class Place implements Serializable {
         super();
         this.name = name;
     }
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "id")
-    private long id;
-
-    @Column(name = "name")
-    private String name;
-
-    @OneToMany(mappedBy = "place", fetch = FetchType.EAGER)
-    private Set<PlaceDetail> placeDetail;
-
-    @ManyToOne(targetEntity = Resume.class, fetch = FetchType.EAGER)
-    @JoinColumn(name = "id_resume")
-    private Resume resume;
-
 
     public long getId() {
         return id;

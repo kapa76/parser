@@ -2,12 +2,22 @@ package org.parser.persistence.model;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.util.Set;
 
-@Entity
+@Entity(name="site")
+@Table
 public class Site implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "ID")
+    private long id;
+    @Column(name = "NAME")
+    private String name;
+    @Column(name = "DESCRIPTION")
+    private String description;
+    @Column(name = "url")
+    private String url;
 
     public Site() {
         super();
@@ -19,20 +29,6 @@ public class Site implements Serializable {
         this.name = name;
         this.url = url;
     }
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "ID")
-    private long id;
-
-    @Column(name = "NAME")
-    private String name;
-
-    @Column(name = "DESCRIPTION")
-    private String description;
-
-    @Column(name = "url")
-    private String url;
 
     public long getId() {
         return id;

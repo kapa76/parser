@@ -3,8 +3,8 @@ package org.parser.persistence.repository.hibernate;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import org.parser.persistence.model.*;
-import org.hibernate.Session; import org.hibernate.Transaction; import org.springframework.stereotype.Repository;
+import org.parser.persistence.model.EducationFormResume;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
@@ -43,6 +43,11 @@ public class EducationFormResumeRepository extends AbstractRepo {
     }
 
     public void deleteById(long entityId) {
+
+    }
+
+    public EducationFormResume findOne(String name, long id) {
+        return (EducationFormResume) sessionFactory.getCurrentSession().createQuery("from education_form_resume p where p.name = :name and p.site.id = :id ").setParameter("id", id).setParameter("name", name).uniqueResult();
 
     }
 }

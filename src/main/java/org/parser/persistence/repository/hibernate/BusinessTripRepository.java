@@ -1,8 +1,10 @@
 package org.parser.persistence.repository.hibernate;
 
 
+import org.hibernate.Session;
+import org.hibernate.Transaction;
 import org.parser.persistence.model.BusinessTrip;
-import org.hibernate.Session; import org.hibernate.Transaction; import org.springframework.stereotype.Repository;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
@@ -10,12 +12,12 @@ import java.util.List;
 public class BusinessTripRepository extends AbstractRepo {
 
     public BusinessTrip findOne(Long id) {
-        return (BusinessTrip) sessionFactory.getCurrentSession().get(BusinessTrip.class, id) ;
+        return (BusinessTrip) sessionFactory.getCurrentSession().get(BusinessTrip.class, id);
     }
 
 
     public BusinessTrip findOne(String name) {
-        return (BusinessTrip)sessionFactory.getCurrentSession().createQuery("from business_trip p where p.name = :name").setParameter("name", name).uniqueResult();
+        return (BusinessTrip) sessionFactory.getCurrentSession().createQuery("from business_trip p where p.name = :name").setParameter("name", name).uniqueResult();
     }
 
 
@@ -25,7 +27,11 @@ public class BusinessTripRepository extends AbstractRepo {
 
 
     public void create(BusinessTrip entity) {
-        Session session = sessionFactory.openSession();         Transaction tx = session.beginTransaction();         session.save(entity);         tx.commit();         session.close();
+        Session session = sessionFactory.openSession();
+        Transaction tx = session.beginTransaction();
+        session.save(entity);
+        tx.commit();
+        session.close();
     }
 
 
@@ -41,5 +47,9 @@ public class BusinessTripRepository extends AbstractRepo {
 
     public void deleteById(long entityId) {
 
+    }
+
+    public BusinessTrip findOne(String name, long id) {
+        return (BusinessTrip) sessionFactory.getCurrentSession().createQuery("from business_trip p where p.name = :name and p.site.id = :id ").setParameter("id", id).setParameter("name", name).uniqueResult();
     }
 }

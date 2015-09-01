@@ -1,8 +1,10 @@
 package org.parser.persistence.repository.hibernate;
 
 
+import org.hibernate.Session;
+import org.hibernate.Transaction;
 import org.parser.persistence.model.Children;
-import org.hibernate.Session; import org.hibernate.Transaction; import org.springframework.stereotype.Repository;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
@@ -15,7 +17,7 @@ public class ChildrenRepository extends AbstractRepo {
 
 
     public Children findOne(String name) {
-        return (Children)sessionFactory.getCurrentSession().createQuery("from children p where p.name = :name").setParameter("name", name).uniqueResult();
+        return (Children) sessionFactory.getCurrentSession().createQuery("from children p where p.name = :name").setParameter("name", name).uniqueResult();
     }
 
 
@@ -25,7 +27,11 @@ public class ChildrenRepository extends AbstractRepo {
 
 
     public void create(Children entity) {
-        Session session = sessionFactory.openSession();         Transaction tx = session.beginTransaction();         session.save(entity);         tx.commit();         session.close();
+        Session session = sessionFactory.openSession();
+        Transaction tx = session.beginTransaction();
+        session.save(entity);
+        tx.commit();
+        session.close();
     }
 
 
@@ -40,6 +46,11 @@ public class ChildrenRepository extends AbstractRepo {
 
 
     public void deleteById(long entityId) {
+
+    }
+
+    public Children findOne(String name, long id) {
+        return (Children) sessionFactory.getCurrentSession().createQuery("from children p where p.name = :name and p.site.id = :id ").setParameter("id", id).setParameter("name", name).uniqueResult();
 
     }
 }

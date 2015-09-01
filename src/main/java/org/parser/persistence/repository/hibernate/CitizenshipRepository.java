@@ -1,8 +1,10 @@
 package org.parser.persistence.repository.hibernate;
 
 
-import org.parser.persistence.model.*;
-import org.hibernate.Session; import org.hibernate.Transaction; import org.springframework.stereotype.Repository;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
+import org.parser.persistence.model.Citizenship;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
@@ -15,7 +17,7 @@ public class CitizenshipRepository extends AbstractRepo {
 
 
     public Citizenship findOne(String name) {
-        return (Citizenship)sessionFactory.getCurrentSession().createQuery("from citizenship p where p.name = :name").setParameter("name", name).uniqueResult();
+        return (Citizenship) sessionFactory.getCurrentSession().createQuery("from citizenship p where p.name = :name").setParameter("name", name).uniqueResult();
     }
 
 
@@ -25,7 +27,11 @@ public class CitizenshipRepository extends AbstractRepo {
 
 
     public void create(Citizenship entity) {
-        Session session = sessionFactory.openSession();         Transaction tx = session.beginTransaction();         session.save(entity);         tx.commit();         session.close();
+        Session session = sessionFactory.openSession();
+        Transaction tx = session.beginTransaction();
+        session.save(entity);
+        tx.commit();
+        session.close();
     }
 
 
@@ -40,6 +46,11 @@ public class CitizenshipRepository extends AbstractRepo {
 
 
     public void deleteById(long entityId) {
+
+    }
+
+    public Citizenship findOne(String name, long id) {
+        return (Citizenship) sessionFactory.getCurrentSession().createQuery("from citizenship p where p.name = :name and p.site.id = :id ").setParameter("id", id).setParameter("name", name).uniqueResult();
 
     }
 }

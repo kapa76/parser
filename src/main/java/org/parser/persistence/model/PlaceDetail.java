@@ -4,11 +4,35 @@ import javax.persistence.*;
 import java.io.Serializable;
 import java.sql.Date;
 
-@Entity (name="place_detail")
+@Entity(name = "place_detail")
 @Table
 public class PlaceDetail implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "id")
+    private long id;
+    @Column(name = "name")
+    private String name;
+    @Column(name = "description")
+    private String description;
+    @Column(name = "option_descr")
+    private String optionDescr;
+    @Column(name = "detail")
+    private String detail;
+    @Column(name = "date_from")
+    private Date dateFrom;
+    @Column(name = "date_to")
+    private Date dateTo;
+    @Column(name = "company")
+    private String company;
+    @ManyToOne(targetEntity = Place.class, fetch = FetchType.EAGER)
+    @JoinColumn(name = "id_place")
+    private Place place;
+    @ManyToOne(targetEntity = City.class, fetch = FetchType.EAGER)
+    @JoinColumn(name = "id_city")
+    private City city;
 
     public PlaceDetail() {
         super();
@@ -18,40 +42,6 @@ public class PlaceDetail implements Serializable {
         super();
         this.name = name;
     }
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "id")
-    private long id;
-
-    @Column(name = "name")
-    private String name;
-
-    @Column(name = "description")
-    private String description;
-
-    @Column(name = "option_descr")
-    private String optionDescr;
-
-    @Column(name = "detail")
-    private String detail;
-
-    @Column(name = "date_from")
-    private Date dateFrom;
-
-    @Column(name = "date_to")
-    private Date dateTo;
-
-    @Column(name = "company")
-    private String company;
-
-    @ManyToOne(targetEntity = Place.class, fetch = FetchType.EAGER)
-    @JoinColumn(name = "id_place")
-    private Place place;
-
-    @ManyToOne(targetEntity = City.class, fetch = FetchType.EAGER)
-    @JoinColumn(name = "id_city")
-    private City city;
 
     public long getId() {
         return id;

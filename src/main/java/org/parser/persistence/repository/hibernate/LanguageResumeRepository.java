@@ -1,8 +1,10 @@
 package org.parser.persistence.repository.hibernate;
 
 
-import org.parser.persistence.model.*;
-import org.hibernate.Session; import org.hibernate.Transaction; import org.springframework.stereotype.Repository;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
+import org.parser.persistence.model.LanguageResume;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
@@ -25,7 +27,11 @@ public class LanguageResumeRepository extends AbstractRepo {
 
 
     public void create(LanguageResume entity) {
-        Session session = sessionFactory.openSession();         Transaction tx = session.beginTransaction();         session.save(entity);         tx.commit();         session.close();
+        Session session = sessionFactory.openSession();
+        Transaction tx = session.beginTransaction();
+        session.save(entity);
+        tx.commit();
+        session.close();
     }
 
 
@@ -40,6 +46,11 @@ public class LanguageResumeRepository extends AbstractRepo {
 
 
     public void deleteById(long entityId) {
+
+    }
+
+    public LanguageResume findOne(String name, long id) {
+        return (LanguageResume) sessionFactory.getCurrentSession().createQuery("from language_resume p where p.name = :name and p.site.id = :id ").setParameter("id", id).setParameter("name", name).uniqueResult();
 
     }
 }

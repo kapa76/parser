@@ -9,6 +9,21 @@ import java.sql.Date;
 public class Queuev implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "id")
+    private long id;
+    @Column(name = "name")
+    private String name;
+    @Column(name = "date_from")
+    private Date dateFrom;
+    @Column(name = "date_to")
+    private Date dateTo;
+    @Column(name = "status")
+    private String status;
+    @ManyToOne(targetEntity = Vacancy.class, fetch = FetchType.EAGER)
+    @JoinColumn(name = "id_vacancy")
+    private Vacancy vacancy;
 
     public Queuev() {
         super();
@@ -18,27 +33,6 @@ public class Queuev implements Serializable {
         super();
         this.name = name;
     }
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "id")
-    private long id;
-
-    @Column(name = "name")
-    private String name;
-
-    @Column(name = "date_from")
-    private Date dateFrom;
-
-    @Column(name = "date_to")
-    private Date dateTo;
-
-    @Column(name = "status")
-    private String status;
-
-    @ManyToOne(targetEntity = Vacancy.class, fetch = FetchType.EAGER)
-    @JoinColumn(name = "id_vacancy")
-    private Vacancy vacancy;
 
     public long getId() {
         return id;

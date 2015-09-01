@@ -1,8 +1,10 @@
 package org.parser.persistence.repository.hibernate;
 
 
-import org.parser.persistence.model.*;
-import org.hibernate.Session; import org.hibernate.Transaction; import org.springframework.stereotype.Repository;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
+import org.parser.persistence.model.Site;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
@@ -15,7 +17,7 @@ public class SiteRepository extends AbstractRepo {
 
 
     public Site findOne(String name) {
-        return null;
+        return (Site) sessionFactory.getCurrentSession().createQuery("from site p where p.name = :name").setParameter("name", name).uniqueResult();
     }
 
 
@@ -25,7 +27,11 @@ public class SiteRepository extends AbstractRepo {
 
 
     public void create(Site entity) {
-        Session session = sessionFactory.openSession();         Transaction tx = session.beginTransaction();         session.save(entity);         tx.commit();         session.close();
+        Session session = sessionFactory.openSession();
+        Transaction tx = session.beginTransaction();
+        session.save(entity);
+        tx.commit();
+        session.close();
     }
 
 

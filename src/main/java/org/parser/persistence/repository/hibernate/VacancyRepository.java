@@ -3,8 +3,8 @@ package org.parser.persistence.repository.hibernate;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import org.parser.persistence.model.*;
-import org.hibernate.Session; import org.hibernate.Transaction; import org.springframework.stereotype.Repository;
+import org.parser.persistence.model.Vacancy;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
@@ -30,7 +30,7 @@ public class VacancyRepository extends AbstractRepo {
         Session session = sessionFactory.openSession();
         Transaction tx = session.beginTransaction();
         session.save(entity);
-        if(this.isCommit()) tx.commit();
+        if (this.isCommit()) tx.commit();
         session.close();
     }
 

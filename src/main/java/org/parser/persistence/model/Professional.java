@@ -1,7 +1,6 @@
 package org.parser.persistence.model;
 
 import javax.persistence.*;
-import javax.persistence.Entity;
 import java.io.Serializable;
 import java.util.Set;
 
@@ -9,6 +8,17 @@ import java.util.Set;
 public class Professional implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "ID")
+    private long id;
+    @Column(name = "professional_name")
+    private String professionalName;
+    @ManyToOne(targetEntity = Site.class, fetch = FetchType.EAGER)
+    @JoinColumn(name = "id_site")
+    private Site site;
+    @OneToMany(mappedBy = "professional", fetch = FetchType.EAGER)
+    private Set<ProfessionalDetail> professionalDetail;
 
     public Professional() {
         super();
@@ -20,21 +30,6 @@ public class Professional implements Serializable {
         this.professionalName = professionalName;
         this.site = site;
     }
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "ID")
-    private long id;
-
-    @Column(name = "professional_name")
-    private String professionalName;
-
-    @ManyToOne(targetEntity = Site.class, fetch = FetchType.EAGER)
-    @JoinColumn(name = "id_site")
-    private Site site;
-
-    @OneToMany(mappedBy = "professional", fetch = FetchType.EAGER)
-    private Set<ProfessionalDetail> professionalDetail;
 
     public long getId() {
         return id;

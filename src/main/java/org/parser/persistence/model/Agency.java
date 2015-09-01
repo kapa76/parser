@@ -3,11 +3,20 @@ package org.parser.persistence.model;
 import javax.persistence.*;
 import java.io.Serializable;
 
-@Entity(name="agency")
+@Entity(name = "agency")
 @Table
 public class Agency implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "id")
+    private long id;
+    @Column(name = "name")
+    private String name;
+    @ManyToOne(targetEntity = Site.class, fetch = FetchType.EAGER)
+    @JoinColumn(name = "id_site")
+    private Site site;
 
     public Agency() {
         super();
@@ -17,18 +26,6 @@ public class Agency implements Serializable {
         super();
         this.name = name;
     }
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "id")
-    private long id;
-
-    @Column(name = "name")
-    private String name;
-
-    @ManyToOne(targetEntity = Site.class, fetch = FetchType.EAGER)
-    @JoinColumn(name = "id_site")
-    private Site site;
 
     public Agency(String value, Site siteDefault) {
         super();

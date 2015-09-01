@@ -1,8 +1,10 @@
 package org.parser.persistence.repository.hibernate;
 
 
+import org.hibernate.Session;
+import org.hibernate.Transaction;
 import org.parser.persistence.model.City;
-import org.hibernate.Session; import org.hibernate.Transaction; import org.springframework.stereotype.Repository;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
@@ -19,7 +21,7 @@ public class CityRepository extends AbstractRepo {
 
 
     public City findOne(String name) {
-        return (City)sessionFactory.getCurrentSession().createQuery("from city p where p.name = :name").setParameter("name", name).uniqueResult();
+        return (City) sessionFactory.getCurrentSession().createQuery("from city p where p.name = :name").setParameter("name", name).uniqueResult();
     }
 
 
@@ -29,7 +31,11 @@ public class CityRepository extends AbstractRepo {
 
 
     public void create(City entity) {
-        Session session = sessionFactory.openSession();         Transaction tx = session.beginTransaction();         session.save(entity);         tx.commit();         session.close();
+        Session session = sessionFactory.openSession();
+        Transaction tx = session.beginTransaction();
+        session.save(entity);
+        tx.commit();
+        session.close();
     }
 
 

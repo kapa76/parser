@@ -1,8 +1,10 @@
 package org.parser.persistence.repository.hibernate;
 
 
-import org.parser.persistence.model.*;
-import org.hibernate.Session; import org.hibernate.Transaction; import org.springframework.stereotype.Repository;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
+import org.parser.persistence.model.PlaceWork;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
@@ -15,7 +17,7 @@ public class PlaceWorkRepository extends AbstractRepo {
 
 
     public PlaceWork findOne(String name) {
-        return (PlaceWork)sessionFactory.getCurrentSession().createQuery("from place_work p where p.name = :name").setParameter("name", name).uniqueResult();
+        return (PlaceWork) sessionFactory.getCurrentSession().createQuery("from place_work p where p.name = :name").setParameter("name", name).uniqueResult();
     }
 
 
@@ -25,7 +27,11 @@ public class PlaceWorkRepository extends AbstractRepo {
 
 
     public void create(PlaceWork entity) {
-        Session session = sessionFactory.openSession();         Transaction tx = session.beginTransaction();         session.save(entity);         tx.commit();         session.close();
+        Session session = sessionFactory.openSession();
+        Transaction tx = session.beginTransaction();
+        session.save(entity);
+        tx.commit();
+        session.close();
     }
 
 
@@ -40,6 +46,11 @@ public class PlaceWorkRepository extends AbstractRepo {
 
 
     public void deleteById(long entityId) {
+
+    }
+
+    public PlaceWork findOne(String name, long id) {
+        return (PlaceWork) sessionFactory.getCurrentSession().createQuery("from place_work p where p.name = :name and p.site.id = :id ").setParameter("id", id).setParameter("name", name).uniqueResult();
 
     }
 }

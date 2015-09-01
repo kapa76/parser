@@ -4,10 +4,19 @@ package org.parser.persistence.model;
 import javax.persistence.*;
 import java.io.Serializable;
 
-@Entity(name="gender_resume")
+@Entity(name = "gender_resume")
 public class GenderResume implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "id")
+    private long id;
+    @Column(name = "name")
+    private String name;
+    @ManyToOne(targetEntity = Site.class, fetch = FetchType.EAGER)
+    @JoinColumn(name = "id_site")
+    private Site site;
 
     public GenderResume() {
         super();
@@ -17,18 +26,6 @@ public class GenderResume implements Serializable {
         super();
         this.name = name;
     }
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "id")
-    private long id;
-
-    @Column(name = "name")
-    private String name;
-
-    @ManyToOne(targetEntity = Site.class, fetch = FetchType.EAGER)
-    @JoinColumn(name = "id_site")
-    private Site site;
 
     public GenderResume(String value, Site siteDefault) {
         super();

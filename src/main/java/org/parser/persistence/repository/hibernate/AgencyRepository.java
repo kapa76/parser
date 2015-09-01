@@ -4,7 +4,7 @@ package org.parser.persistence.repository.hibernate;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.parser.persistence.model.Agency;
-import org.hibernate.Session; import org.hibernate.Transaction; import org.springframework.stereotype.Repository;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
@@ -12,12 +12,12 @@ import java.util.List;
 public class AgencyRepository extends AbstractRepo {
 
     public Agency findOne(Long id) {
-        return (Agency) sessionFactory.getCurrentSession().get(Agency.class, id) ;
+        return (Agency) sessionFactory.getCurrentSession().get(Agency.class, id);
     }
 
 
     public Agency findOne(String name) {
-        return (Agency)sessionFactory.getCurrentSession().createQuery("from agency p where p.name = :name").setParameter("name", name).uniqueResult();
+        return (Agency) sessionFactory.getCurrentSession().createQuery("from agency p where p.name = :name").setParameter("name", name).uniqueResult();
     }
 
 
@@ -27,7 +27,11 @@ public class AgencyRepository extends AbstractRepo {
 
 
     public void create(Agency entity) {
-        Session session = sessionFactory.openSession();         Transaction tx = session.beginTransaction();         session.save(entity);         tx.commit();         session.close();
+        Session session = sessionFactory.openSession();
+        Transaction tx = session.beginTransaction();
+        session.save(entity);
+        tx.commit();
+        session.close();
     }
 
 
@@ -43,5 +47,9 @@ public class AgencyRepository extends AbstractRepo {
 
     public void deleteById(long entityId) {
 
+    }
+
+    public Agency findOne(String name, long id) {
+        return (Agency) sessionFactory.getCurrentSession().createQuery("from agency p where p.name = :name and p.site.id = :id ").setParameter("id", id).setParameter("name", name).uniqueResult();
     }
 }
