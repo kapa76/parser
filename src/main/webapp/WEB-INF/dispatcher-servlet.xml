@@ -38,10 +38,45 @@
         <property name="dataSource" ref="dataSource"/>
         <property name="annotatedClasses">
             <list>
-                <value>org.parser.persistence.model.City</value>
                 <value>org.parser.persistence.model.Agency</value>
+                <value>org.parser.persistence.model.BusinessTrip</value>
+                <value>org.parser.persistence.model.Children</value>
+                <value>org.parser.persistence.model.ChildrenResume</value>
+                <value>org.parser.persistence.model.Citizenship</value>
+                <value>org.parser.persistence.model.City</value>
+                <value>org.parser.persistence.model.Currency</value>
+                <value>org.parser.persistence.model.Education</value>
+                <value>org.parser.persistence.model.EducationFormResume</value>
+                <value>org.parser.persistence.model.EducationHistory</value>
+                <value>org.parser.persistence.model.EducationTypeResume</value>
+                <value>org.parser.persistence.model.Experience</value>
+                <value>org.parser.persistence.model.Gender</value>
+                <value>org.parser.persistence.model.GenderResume</value>
+                <value>org.parser.persistence.model.LangLevel</value>
+                <value>org.parser.persistence.model.LangLevelResume</value>
+                <value>org.parser.persistence.model.Language</value>
+                <value>org.parser.persistence.model.LanguageResume</value>
+                <value>org.parser.persistence.model.MaritalStatus</value>
+                <value>org.parser.persistence.model.MaritalStatusResume</value>
+                <value>org.parser.persistence.model.MaritalStatusResumeGender</value>
+                <value>org.parser.persistence.model.Moveable</value>
+                <value>org.parser.persistence.model.Place</value>
+                <value>org.parser.persistence.model.PlaceDetail</value>
+                <value>org.parser.persistence.model.PlaceWork</value>
+                <value>org.parser.persistence.model.PreviosWorkHistory</value>
+                <value>org.parser.persistence.model.Professional</value>
+                <value>org.parser.persistence.model.ProfessionalDetail</value>
+                <value>org.parser.persistence.model.PropertiesR</value>
+                <value>org.parser.persistence.model.PropertiesV</value>
+                <value>org.parser.persistence.model.PublishedResume</value>
+                <value>org.parser.persistence.model.Queuer</value>
+                <value>org.parser.persistence.model.Queuev</value>
+                <value>org.parser.persistence.model.Resume</value>
                 <value>org.parser.persistence.model.Site</value>
-
+                <value>org.parser.persistence.model.SocialLinksResume</value>
+                <value>org.parser.persistence.model.TypeOfWork</value>
+                <value>org.parser.persistence.model.Vacancy</value>
+                <value>org.parser.persistence.model.WorkType</value>
             </list>
         </property>
 

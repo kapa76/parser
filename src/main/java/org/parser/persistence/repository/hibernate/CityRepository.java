@@ -1,14 +1,8 @@
 package org.parser.persistence.repository.hibernate;
 
 
-import org.hibernate.SessionFactory;
 import org.parser.persistence.model.City;
-import org.parser.persistence.repository.AbstractRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -25,7 +19,7 @@ public class CityRepository extends AbstractRepo {
 
 
     public City findOne(String name) {
-        return null;
+        return (City)sessionFactory.openSession().createQuery("from city p where p.name = :name").setParameter("name", name).uniqueResult();
     }
 
 

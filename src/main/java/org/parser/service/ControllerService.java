@@ -93,7 +93,7 @@ public class ControllerService {
 
     @RequestMapping(value = "/startResume", method = RequestMethod.POST)
     @ResponseStatus(value = HttpStatus.OK)
-    public void startResume(@RequestParam(value = "system_name") String name) {
+    public void startResume(@RequestParam(value = "system_name") String name) throws IOException {
         logger.debug("start vacancy loading: " + name);
 
         switch (name) {

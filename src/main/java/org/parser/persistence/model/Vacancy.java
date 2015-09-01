@@ -59,7 +59,7 @@ public class Vacancy implements Serializable {
     private long date_pub_to;
 
     @Column(name = "payment_from")
-    private long payment_from;
+    private Double payment_from;
 
     @Column(name = "internal_id")
     private long internal_id;
@@ -128,7 +128,6 @@ public class Vacancy implements Serializable {
     @JoinColumn(name = "id_agency")
     private Agency agency;
 
-
     @Column(name = "company_name")
     private String companyName;
 
@@ -152,12 +151,8 @@ public class Vacancy implements Serializable {
     @JoinColumn(name = "id_gender")
     private Gender gender;
 
-
     @Column(name = "company_url")
     private String companyUrl;
-
-    /**/
-
 
     @ManyToOne(targetEntity = Professional.class, fetch = FetchType.EAGER)
     @JoinColumn(name = "id_professional")
@@ -193,24 +188,148 @@ public class Vacancy implements Serializable {
         return professional;
     }
 
-    public void setProfessional(Professional professional) {
-        this.professional = professional;
+    public Long getId_client() {
+        return id_client;
     }
 
-    public ProfessionalDetail getProfessionalDetail() {
-        return professionalDetail;
+    public void setId_client(Long id_client) {
+        this.id_client = id_client;
     }
 
-    public void setProfessionalDetail(ProfessionalDetail professionalDetail) {
-        this.professionalDetail = professionalDetail;
+    public Long getDatePublished() {
+        return datePublished;
     }
 
-    public String getCompanyUrl() {
-        return companyUrl;
+    public void setDatePublished(Long datePublished) {
+        this.datePublished = datePublished;
     }
 
-    public void setCompanyUrl(String companyUrl) {
-        this.companyUrl = companyUrl;
+    public Double getPayment() {
+        return payment;
+    }
+
+    public void setPayment(Double payment) {
+        this.payment = payment;
+    }
+
+    public String getWork() {
+        return work;
+    }
+
+    public void setWork(String work) {
+        this.work = work;
+    }
+
+    public String getCandidat() {
+        return candidat;
+    }
+
+    public void setCandidat(String candidat) {
+        this.candidat = candidat;
+    }
+
+    public Currency getCurrency() {
+        return currency;
+    }
+
+    public void setCurrency(Currency currency) {
+        this.currency = currency;
+    }
+
+    public String getCompensation() {
+        return compensation;
+    }
+
+    public void setCompensation(String compensation) {
+        this.compensation = compensation;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public long getDate_pub_to() {
+        return date_pub_to;
+    }
+
+    public void setDate_pub_to(long date_pub_to) {
+        this.date_pub_to = date_pub_to;
+    }
+
+    public Double getPayment_from() {
+        return payment_from;
+    }
+
+    public void setPayment_from(Double payment_from) {
+        this.payment_from = payment_from;
+    }
+
+    public long getInternal_id() {
+        return internal_id;
+    }
+
+    public void setInternal_id(long internal_id) {
+        this.internal_id = internal_id;
+    }
+
+    public Moveable getMoveable() {
+        return moveable;
+    }
+
+    public void setMoveable(Moveable moveable) {
+        this.moveable = moveable;
+    }
+
+    public String getAgreement() {
+        return agreement;
+    }
+
+    public void setAgreement(String agreement) {
+        this.agreement = agreement;
+    }
+
+    public String getAnonymous() {
+        return anonymous;
+    }
+
+    public void setAnonymous(String anonymous) {
+        this.anonymous = anonymous;
+    }
+
+    public boolean is_archive() {
+        return is_archive;
+    }
+
+    public void setIs_archive(boolean is_archive) {
+        this.is_archive = is_archive;
+    }
+
+    public boolean is_storage() {
+        return is_storage;
+    }
+
+    public void setIs_storage(boolean is_storage) {
+        this.is_storage = is_storage;
+    }
+
+    public TypeOfWork getType_of_work() {
+        return type_of_work;
+    }
+
+    public void setType_of_work(TypeOfWork type_of_work) {
+        this.type_of_work = type_of_work;
+    }
+
+    public PlaceWork getPlaceOfWork() {
+        return placeOfWork;
+    }
+
+    public void setPlaceOfWork(PlaceWork placeOfWork) {
+        this.placeOfWork = placeOfWork;
     }
 
     public Experience getExperience() {
@@ -227,6 +346,106 @@ public class Vacancy implements Serializable {
 
     public void setEducation(Education education) {
         this.education = education;
+    }
+
+    public MaritalStatus getMaritalStatus() {
+        return maritalStatus;
+    }
+
+    public void setMaritalStatus(MaritalStatus maritalStatus) {
+        this.maritalStatus = maritalStatus;
+    }
+
+    public Children getChildren() {
+        return children;
+    }
+
+    public void setChildren(Children children) {
+        this.children = children;
+    }
+
+    public Language getLanguages() {
+        return languages;
+    }
+
+    public void setLanguages(Language languages) {
+        this.languages = languages;
+    }
+
+    public Agency getAgency() {
+        return agency;
+    }
+
+    public void setAgency(Agency agency) {
+        this.agency = agency;
+    }
+
+    public String getCompanyName() {
+        return companyName;
+    }
+
+    public void setCompanyName(String companyName) {
+        this.companyName = companyName;
+    }
+
+    public String getProfession() {
+        return profession;
+    }
+
+    public void setProfession(String profession) {
+        this.profession = profession;
+    }
+
+    public String getCompanyDescr() {
+        return companyDescr;
+    }
+
+    public void setCompanyDescr(String companyDescr) {
+        this.companyDescr = companyDescr;
+    }
+
+    public Integer getAgeFrom() {
+        return ageFrom;
+    }
+
+    public void setAgeFrom(Integer ageFrom) {
+        this.ageFrom = ageFrom;
+    }
+
+    public Integer getAgeTo() {
+        return ageTo;
+    }
+
+    public void setAgeTo(Integer ageTo) {
+        this.ageTo = ageTo;
+    }
+
+    public Gender getGender() {
+        return gender;
+    }
+
+    public void setGender(Gender gender) {
+        this.gender = gender;
+    }
+
+    public String getCompanyUrl() {
+        return companyUrl;
+    }
+
+    public void setCompanyUrl(String companyUrl) {
+        this.companyUrl = companyUrl;
+    }
+
+    public void setProfessional(Professional professional) {
+        this.professional = professional;
+    }
+
+    public ProfessionalDetail getProfessionalDetail() {
+        return professionalDetail;
+    }
+
+    public void setProfessionalDetail(ProfessionalDetail professionalDetail) {
+        this.professionalDetail = professionalDetail;
     }
 
     public City getCity() {

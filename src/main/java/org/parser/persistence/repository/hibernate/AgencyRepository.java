@@ -2,44 +2,43 @@ package org.parser.persistence.repository.hibernate;
 
 
 import org.parser.persistence.model.Agency;
-import org.parser.persistence.repository.AbstractRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
 @Repository
-public class AgencyRepository extends HibernateRepositoryBase implements AbstractRepository<Agency> {
-    @Override
+public class AgencyRepository extends AbstractRepo {
+
     public Agency findOne(Long id) {
-        return getHibernateTemplate().get(Agency.class, id);
+        return (Agency) sessionFactory.openSession().get(Agency.class, id) ;
     }
 
-    @Override
+
     public Agency findOne(String name) {
-        return null;
+        return (Agency)sessionFactory.openSession().createQuery("from agency p where p.name = :name").setParameter("name", name).uniqueResult();
     }
 
-    @Override
+
     public List<Agency> findAll() {
         return null;
     }
 
-    @Override
+
     public void create(Agency entity) {
-        getHibernateTemplate().save(entity);
+        sessionFactory.openSession().save(entity);
     }
 
-    @Override
+
     public Agency update(Agency entity) {
         return null;
     }
 
-    @Override
+
     public void delete(Agency entity) {
 
     }
 
-    @Override
+
     public void deleteById(long entityId) {
 
     }

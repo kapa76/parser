@@ -2,6 +2,7 @@ package org.parser.persistence.kernel.factory;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -11,11 +12,13 @@ import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicNameValuePair;
 import org.parser.common.SiteEnum;
+import org.parser.common.SuperJobResumePage;
 import org.parser.common.SuperJobVacancyPage;
 import org.parser.persistence.kernel.ServiceSJ;
 import org.parser.persistence.model.*;
 import org.parser.persistence.model.Currency;
 import org.parser.persistence.repository.hibernate.*;
+import org.parser.util.CommonUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Repository;
@@ -37,7 +40,7 @@ public class ServiceSJImpl implements ServiceSJ {
     @Autowired
     public CityRepository cityService;
 
-    /*
+
     @Autowired
     public AgencyRepository agencyService;
 
@@ -59,83 +62,113 @@ public class ServiceSJImpl implements ServiceSJ {
 
     @Autowired
     private EducationRepository educationService;
+
     @Autowired
     private EducationFormResumeRepository educationFormResumeService;
+
     @Autowired
     private EducationHistoryRepository educationHistoryService;
+
     @Autowired
     private EducationTypeResumeRepository educationTypeResumeService;
+
     @Autowired
     private ExperienceRepository experienceService;
+
     @Autowired
     private GenderRepository genderService;
+
     @Autowired
     private GenderResumeRepository genderResumeService;
+
     @Autowired
     private LangLevelRepository langLevelService;
+
     @Autowired
     private LangLevelResumeRepository langLevelResumeService;
+
     @Autowired
     private LanguageRepository languageService;
+
     @Autowired
     private LanguageResumeRepository languageResumeService;
+
     @Autowired
     private MaritalStatusRepository maritalStatusService;
+
     @Autowired
     private MaritalStatusResumeRepository maritalStatusResumeService;
+
     @Autowired
     private MaritalStatusResumeGenderRepository maritalStatusResumeGenderService;
+
     @Autowired
     private MoveableRepository moveableService;
+
     @Autowired
     private PlaceRepository placeService;
+
     @Autowired
     private PlaceDetailRepository placeDetailService;
+
     @Autowired
     private PlaceWorkRepository placeWorkService;
+
     @Autowired
     private PreviosWorkHistoryRepository previosWorkHistoryService;
+
     @Autowired
     private ProfessionalRepository professionalService;
+
     @Autowired
     private ProfessionalDetailRepository professionalDetailService;
+
     @Autowired
     private PropertiesRRepository propertiesRService;
+
     @Autowired
     private PropertiesVRepository propertiesVService;
+
     @Autowired
     private PublishedResumeRepository publishedResumeService;
+
     @Autowired
     private QueuerRepository queuerService;
+
     @Autowired
     private QueuevRepository queuevService;
+
     @Autowired
     private ResumeRepository resumeService;
+
     @Autowired
     private SiteRepository siteService;
+
     @Autowired
     private SocialLinksResumeRepository socialLinksResumeService;
+
     @Autowired
     private TypeOfWorkRepository typeOfWorkService;
+
     @Autowired
     private VacancyRepository vacancyService;
+
     @Autowired
     private WorkTypeRepository workTypeService;
-               */
+
 
     private Site siteDefault = null;
 
     @Override
     public void init() {
-        //cityService.create(new City("asdasd"));
-        //new CityRepository()
+
         loadReferencesSJ(SJ_LOAD_PROPERTIES, SiteEnum.superjob);
 
     }
 
     @Override
     public void startVacancy() throws IOException {
-        //siteDefault = siteService.findOne("superjob");
+        siteDefault = siteService.findOne("superjob");
 
         //load first page для получения кол-ва страниц
         int current = 0;
@@ -159,6 +192,8 @@ public class ServiceSJImpl implements ServiceSJ {
             String paramString = URLEncodedUtils.format(params, "utf-8");
             url = url + paramString;
 
+            //url сохранить в history на тему делали не делали ? ....
+
             HttpClient client = HttpClientBuilder.create().build();
             HttpGet request = new HttpGet(url);
             HttpResponse response = client.execute(request);
@@ -168,26 +203,167 @@ public class ServiceSJImpl implements ServiceSJ {
 
             if (returnCode == 200) {
                 String result = IOUtils.toString(response.getEntity().getContent(), "UTF-8");
-
                 SuperJobVacancyPage sPage = new SuperJobVacancyPage(result);
 
+                saveVacancy(sPage.getVacancyJsonObject());
 
-                //place_of_work
-                JsonElement element = new Gson().fromJson(result, JsonElement.class);
-                //CheckCreateClass(element, "place_of_work", PlaceWork.class, );
+                more = false;
+                //more = sPage.getMore();
+                page++;
+            }
+        }
+    }
 
+    private void saveVacancy(List<JsonObject> vacancyObj) {
+        for (JsonObject t : vacancyObj) {
+            Vacancy v = new Vacancy();
+
+            v.setId_client(t.get("id_client").getAsLong());
+            v.setPayment(t.get("payment_to").getAsDouble());
+            v.setDatePublished(t.get("date_published").getAsLong());
+            v.setWork(CommonUtils.isNullNull(t.get("work")));
+            v.setCandidat(CommonUtils.isNullNull(t.get("candidat")));
+            v.setCurrency(currencyService.findOne(CommonUtils.isNullNull(t.get("currency"))));
+            v.setCompensation(CommonUtils.isNullNull(t.get("compensation")));
+            v.setProfession(t.get("profession").getAsString());
+            v.setAddress(CommonUtils.isNullNull(t.get("address")));
+            v.setDate_pub_to(t.get("date_pub_to").getAsLong());
+            v.setPayment_from(t.get("payment_from").getAsDouble());
+            v.setInternal_id(t.get("id").getAsLong());
+            if (t.get("moveable").isJsonObject()) {
+                String val = t.get("place_of_work").getAsJsonObject().get("title").getAsString();
+                v.setMoveable(moveableService.findOne(val));
+            }
+            v.setAgreement(CommonUtils.isNullNull(t.get("agreement")));
+            v.setAnonymous(CommonUtils.isNullNull(t.get("anonymous")));
+            v.setIs_archive((t.get("is_archive").getAsBoolean()));
+            v.setIs_storage((t.get("is_storage").getAsBoolean()));
+
+            if (t.get("type_of_work").isJsonObject()) {
+                String val = t.get("type_of_work").getAsJsonObject().get("title").getAsString();
+                v.setType_of_work(typeOfWorkService.findOne(val));
+            }
+            if (t.get("place_of_work").isJsonObject()) {
+                String val = t.get("place_of_work").getAsJsonObject().get("title").getAsString();
+                v.setPlaceOfWork(placeWorkService.findOne(val));
+            }
+            if (t.get("education").isJsonObject()) {
+                String val = t.get("education").getAsJsonObject().get("title").getAsString();
+                v.setEducation(educationService.findOne(val));
+            }
+            if (t.get("experience").isJsonObject()) {
+                String val = t.get("experience").getAsJsonObject().get("title").getAsString();
+                v.setExperience(experienceService.findOne(val));
+            }
+            if (t.get("maritalstatus").isJsonObject()) {
+                String val = t.get("maritalstatus").getAsJsonObject().get("title").getAsString();
+                v.setMaritalStatus(maritalStatusService.findOne(val));
+            }
+            if (t.get("children").isJsonObject()) {
+                String val = t.get("children").getAsJsonObject().get("title").getAsString();
+                v.setChildren(childrenService.findOne(val));
+            }
+            if (t.get("languages").isJsonObject()) {
+                String val = t.get("languages").getAsJsonObject().get("title").getAsString();
+                v.setLanguages(languageService.findOne(val));
+            }
+            if (t.get("catalogues").isJsonObject()) {
+                //String val = t.get("catalogues").getAsJsonObject().get("title").getAsString();
+                //v.setCaLanguages(languageService.findOne(val));
+            /*
+                    catalogues: [2]
+                    0:  {
+                    id: 327
+                    title: "Промышленность, производство"
+                    positions: [1]
+                    0:  {
+                    id: 334
+                    title: "Легкая промышленность"
+                    }-
+                    -
+                    }-
+                    1:  {
+                    id: 362
+                    title: "Услуги, ремонт, сервисное обслуживание"
+                    positions: [1]
+                    0:  {
+                    id: 364
+                    title: "Ателье"
+                    }-
+                    -
+                    }*/
             }
 
-            page++;
+            if (t.get("agency").isJsonObject()) {
+                String val = t.get("agency").getAsJsonObject().get("title").getAsString();
+                v.setAgency(agencyService.findOne(val));
+            }
+            if (t.get("town").isJsonObject()) {
+                String val = t.get("town").getAsJsonObject().get("title").getAsString();
+                v.setCity(cityService.findOne(val));
+            }
+            v.setAgeFrom(t.get("age_from").getAsInt());
+            v.setAgeTo(t.get("age_to").getAsInt());
 
+            if (t.get("gender").isJsonObject()) {
+                String val = t.get("gender").getAsJsonObject().get("title").getAsString();
+                v.setGender(genderService.findOne(val));
+            }
+            v.setCompanyDescr(CommonUtils.isNullNull(t.get("firm_activity")));
+            v.setCompanyUrl(CommonUtils.isNullNull(t.get("link")));
+            v.setCompanyName(CommonUtils.isNullNull(t.get("firm_name")));
+            vacancyService.create(v);
         }
+    }
 
+    private void saveResume(List<JsonObject> resumeObj) {
 
     }
 
     @Override
-    public void startResume() {
+    public void startResume() throws IOException {
+        siteDefault = siteService.findOne("superjob");
 
+        //load first page для получения кол-ва страниц
+        int current = 0;
+        int lastPage;
+
+        Integer period = 0;//за все время
+        Integer count = 20; // - на странице
+        Integer page = 0; // номер страницы
+        //если more = true -> есть что качать.
+        boolean more = true;
+
+        String url = "https://api.superjob.ru/2.0/" + "r00e72d6106234c3e2bd3d644c726c4aaeafd6483e52ae3cfc217329676e9de33710117a5" + "/resumes?";
+
+        while (more) {
+            //?page = 0 & period = 0 & count
+
+            List<NameValuePair> params = new LinkedList<NameValuePair>();
+            params.add(new BasicNameValuePair("page", page.toString()));
+            params.add(new BasicNameValuePair("count", count.toString()));
+            params.add(new BasicNameValuePair("period", "0"));
+            String paramString = URLEncodedUtils.format(params, "utf-8");
+            url = url + paramString;
+
+            //url сохранить в history на тему делали не делали ? ....
+
+            HttpClient client = HttpClientBuilder.create().build();
+            HttpGet request = new HttpGet(url);
+            HttpResponse response = client.execute(request);
+
+            int returnCode = response.getStatusLine().getStatusCode();
+            System.out.println("Response Code : " + returnCode);  //200
+
+            if (returnCode == 200) {
+                String result = IOUtils.toString(response.getEntity().getContent(), "UTF-8");
+                SuperJobResumePage sPage = new SuperJobResumePage(result);
+
+                saveResume(sPage.getResumeJsonObject());
+                more = sPage.getMore();
+                page++;
+            }
+        }
     }
 
     private void loadReferencesSJ(String initUrl, SiteEnum val) {
@@ -201,10 +377,8 @@ public class ServiceSJImpl implements ServiceSJ {
 
             if (returnCode == 200) {
                 String result = IOUtils.toString(response.getEntity().getContent(), "UTF-8");
-                //place_of_work
                 JsonElement element = new Gson().fromJson(result, JsonElement.class);
-                //CheckCreateClass(element, "place_of_work", PlaceWork.class, );
-                /*
+
                 PlaceWorkServiceInit(element, "place_of_work");
                 TypeOfWorkServiceInit(element, "type_of_work");
                 EducationServiceInit(element, "education");
@@ -230,7 +404,7 @@ public class ServiceSJImpl implements ServiceSJ {
                 BusinessTripServiceInit(element, "business_trip");
                 PublishedResumeServiceInit(element, "published_resume");
                 SocialLinksResumeServiceInit(element, "social_links_resume");
-                */
+
             }
         } catch (Exception e) {
             String mesg = e.getMessage();
@@ -248,7 +422,7 @@ public class ServiceSJImpl implements ServiceSJ {
                     Map.Entry<String, JsonElement> t = iter.next();
                     String name = t.getValue().toString();
 
-                    PlaceWork p = placeWorkService.findOne(value);
+                    PlaceWork p = placeWorkService.findOne(name);
                     if (p == null) {
                         placeWorkService.create(obj);
                     }
@@ -256,17 +430,17 @@ public class ServiceSJImpl implements ServiceSJ {
 
     } */
 
-                /*
+
     public void SocialLinksResumeServiceInit(JsonElement element, String value) {
         Iterator<Map.Entry<String, JsonElement>> iter = element.getAsJsonObject().getAsJsonObject(value).entrySet().iterator();
         List<String> tval = new ArrayList<String>();
         while (iter.hasNext()) {
             Map.Entry<String, JsonElement> t = iter.next();
             String name = t.getValue().toString();
-
-            SocialLinksResume p = socialLinksResumeService.findOne(value);
+            name = name.replaceAll("\"", "");
+            SocialLinksResume p = socialLinksResumeService.findOne(name);
             if (p == null) {
-                socialLinksResumeService.create(new SocialLinksResume(value, siteDefault));
+                socialLinksResumeService.create(new SocialLinksResume(name, siteDefault));
             }
         }
     }
@@ -277,10 +451,10 @@ public class ServiceSJImpl implements ServiceSJ {
         while (iter.hasNext()) {
             Map.Entry<String, JsonElement> t = iter.next();
             String name = t.getValue().toString();
-
-            PublishedResume p = publishedResumeService.findOne(value);
+            name = name.replaceAll("\"", "");
+            PublishedResume p = publishedResumeService.findOne(name);
             if (p == null) {
-                publishedResumeService.create(new PublishedResume(value, siteDefault));
+                publishedResumeService.create(new PublishedResume(name, siteDefault));
             }
         }
     }
@@ -291,10 +465,10 @@ public class ServiceSJImpl implements ServiceSJ {
         while (iter.hasNext()) {
             Map.Entry<String, JsonElement> t = iter.next();
             String name = t.getValue().toString();
-
-            BusinessTrip p = businessTripService.findOne(value);
+            name = name.replaceAll("\"", "");
+            BusinessTrip p = businessTripService.findOne(name);
             if (p == null) {
-                businessTripService.create(new BusinessTrip(value, siteDefault));
+                businessTripService.create(new BusinessTrip(name, siteDefault));
             }
         }
     }
@@ -305,10 +479,10 @@ public class ServiceSJImpl implements ServiceSJ {
         while (iter.hasNext()) {
             Map.Entry<String, JsonElement> t = iter.next();
             String name = t.getValue().toString();
-
-            Moveable p = moveableService.findOne(value);
+            name = name.replaceAll("\"", "");
+            Moveable p = moveableService.findOne(name);
             if (p == null) {
-                moveableService.create(new Moveable(value, siteDefault));
+                moveableService.create(new Moveable(name, siteDefault));
             }
         }
     }
@@ -319,10 +493,10 @@ public class ServiceSJImpl implements ServiceSJ {
         while (iter.hasNext()) {
             Map.Entry<String, JsonElement> t = iter.next();
             String name = t.getValue().toString();
-
-            Citizenship p = citizenshipService.findOne(value);
+            name = name.replaceAll("\"", "");
+            Citizenship p = citizenshipService.findOne(name);
             if (p == null) {
-                citizenshipService.create(new Citizenship(value, siteDefault));
+                citizenshipService.create(new Citizenship(name, siteDefault));
             }
         }
     }
@@ -333,10 +507,10 @@ public class ServiceSJImpl implements ServiceSJ {
         while (iter.hasNext()) {
             Map.Entry<String, JsonElement> t = iter.next();
             String name = t.getValue().toString();
-
-            WorkType p = workTypeService.findOne(value);
+            name = name.replaceAll("\"", "");
+            WorkType p = workTypeService.findOne(name);
             if (p == null) {
-                workTypeService.create(new WorkType(value, siteDefault));
+                workTypeService.create(new WorkType(name, siteDefault));
             }
         }
     }
@@ -347,10 +521,10 @@ public class ServiceSJImpl implements ServiceSJ {
         while (iter.hasNext()) {
             Map.Entry<String, JsonElement> t = iter.next();
             String name = t.getValue().toString();
-
-            EducationTypeResume p = educationTypeResumeService.findOne(value);
+            name = name.replaceAll("\"", "");
+            EducationTypeResume p = educationTypeResumeService.findOne(name);
             if (p == null) {
-                educationTypeResumeService.create(new EducationTypeResume(value, siteDefault));
+                educationTypeResumeService.create(new EducationTypeResume(name, siteDefault));
             }
         }
     }
@@ -361,10 +535,10 @@ public class ServiceSJImpl implements ServiceSJ {
         while (iter.hasNext()) {
             Map.Entry<String, JsonElement> t = iter.next();
             String name = t.getValue().toString();
-
-            EducationFormResume p = educationFormResumeService.findOne(value);
+            name = name.replaceAll("\"", "");
+            EducationFormResume p = educationFormResumeService.findOne(name);
             if (p == null) {
-                educationFormResumeService.create(new EducationFormResume(value, siteDefault));
+                educationFormResumeService.create(new EducationFormResume(name, siteDefault));
             }
         }
     }
@@ -375,10 +549,10 @@ public class ServiceSJImpl implements ServiceSJ {
         while (iter.hasNext()) {
             Map.Entry<String, JsonElement> t = iter.next();
             String name = t.getValue().toString();
-
-            Currency p = currencyService.findOne(value);
+            name = name.replaceAll("\"", "");
+            Currency p = currencyService.findOne(name);
             if (p == null) {
-                currencyService.create(new Currency(value, siteDefault));
+                currencyService.create(new Currency(name, siteDefault));
             }
         }
     }
@@ -389,10 +563,10 @@ public class ServiceSJImpl implements ServiceSJ {
         while (iter.hasNext()) {
             Map.Entry<String, JsonElement> t = iter.next();
             String name = t.getValue().toString();
-
-            Gender p = genderService.findOne(value);
+            name = name.replaceAll("\"", "");
+            Gender p = genderService.findOne(name);
             if (p == null) {
-                genderService.create(new Gender(value, siteDefault));
+                genderService.create(new Gender(name, siteDefault));
             }
         }
     }
@@ -403,10 +577,10 @@ public class ServiceSJImpl implements ServiceSJ {
         while (iter.hasNext()) {
             Map.Entry<String, JsonElement> t = iter.next();
             String name = t.getValue().toString();
-
-            Agency p = agencyService.findOne(value);
+            name = name.replaceAll("\"", "");
+            Agency p = agencyService.findOne(name);
             if (p == null) {
-                agencyService.create(new Agency(value, siteDefault));
+                agencyService.create(new Agency(name, siteDefault));
             }
         }
     }
@@ -417,10 +591,10 @@ public class ServiceSJImpl implements ServiceSJ {
         while (iter.hasNext()) {
             Map.Entry<String, JsonElement> t = iter.next();
             String name = t.getValue().toString();
-
-            MaritalStatusResumeGender p = maritalStatusResumeGenderService.findOne(value);
+            name = name.replaceAll("\"", "");
+            MaritalStatusResumeGender p = maritalStatusResumeGenderService.findOne(name);
             if (p == null) {
-                maritalStatusResumeGenderService.create(new MaritalStatusResumeGender(value, siteDefault));
+                maritalStatusResumeGenderService.create(new MaritalStatusResumeGender(name, siteDefault));
             }
         }
     }
@@ -431,10 +605,10 @@ public class ServiceSJImpl implements ServiceSJ {
         while (iter.hasNext()) {
             Map.Entry<String, JsonElement> t = iter.next();
             String name = t.getValue().toString();
-
-            Children p = childrenService.findOne(value);
+            name = name.replaceAll("\"", "");
+            Children p = childrenService.findOne(name);
             if (p == null) {
-                childrenService.create(new Children(value, siteDefault));
+                childrenService.create(new Children(name, siteDefault));
             }
         }
     }
@@ -445,10 +619,10 @@ public class ServiceSJImpl implements ServiceSJ {
         while (iter.hasNext()) {
             Map.Entry<String, JsonElement> t = iter.next();
             String name = t.getValue().toString();
-
-            ChildrenResume p = childrenResumeService.findOne(value);
+            name = name.replaceAll("\"", "");
+            ChildrenResume p = childrenResumeService.findOne(name);
             if (p == null) {
-                childrenResumeService.create(new ChildrenResume(value, siteDefault));
+                childrenResumeService.create(new ChildrenResume(name, siteDefault));
             }
         }
     }
@@ -459,10 +633,10 @@ public class ServiceSJImpl implements ServiceSJ {
         while (iter.hasNext()) {
             Map.Entry<String, JsonElement> t = iter.next();
             String name = t.getValue().toString();
-
-            MaritalStatusResume p = maritalStatusResumeService.findOne(value);
+            name = name.replaceAll("\"", "");
+            MaritalStatusResume p = maritalStatusResumeService.findOne(name);
             if (p == null) {
-                maritalStatusResumeService.create(new MaritalStatusResume(value, siteDefault));
+                maritalStatusResumeService.create(new MaritalStatusResume(name, siteDefault));
             }
         }
     }
@@ -474,7 +648,7 @@ public class ServiceSJImpl implements ServiceSJ {
             Map.Entry<String, JsonElement> t = iter.next();
             String name = t.getValue().toString();
 
-            GenderResume p = genderResumeService.findOne(value);
+            GenderResume p = genderResumeService.findOne(name);
             if (p == null) {
                 genderResumeService.create(new GenderResume(value, siteDefault));
             }
@@ -487,10 +661,10 @@ public class ServiceSJImpl implements ServiceSJ {
         while (iter.hasNext()) {
             Map.Entry<String, JsonElement> t = iter.next();
             String name = t.getValue().toString();
-
-            MaritalStatus p = maritalStatusService.findOne(value);
+            name = name.replaceAll("\"", "");
+            MaritalStatus p = maritalStatusService.findOne(name);
             if (p == null) {
-                maritalStatusService.create(new MaritalStatus(value, siteDefault));
+                maritalStatusService.create(new MaritalStatus(name, siteDefault));
             }
         }
     }
@@ -501,10 +675,10 @@ public class ServiceSJImpl implements ServiceSJ {
         while (iter.hasNext()) {
             Map.Entry<String, JsonElement> t = iter.next();
             String name = t.getValue().toString();
-
-            LangLevelResume p = langLevelResumeService.findOne(value);
+            name = name.replaceAll("\"", "");
+            LangLevelResume p = langLevelResumeService.findOne(name);
             if (p == null) {
-                langLevelResumeService.create(new LangLevelResume(value, siteDefault));
+                langLevelResumeService.create(new LangLevelResume(name, siteDefault));
             }
         }
     }
@@ -515,10 +689,10 @@ public class ServiceSJImpl implements ServiceSJ {
         while (iter.hasNext()) {
             Map.Entry<String, JsonElement> t = iter.next();
             String name = t.getValue().toString();
-
-            LanguageResume p = languageResumeService.findOne(value);
+            name = name.replaceAll("\"", "");
+            LanguageResume p = languageResumeService.findOne(name);
             if (p == null) {
-                languageResumeService.create(new LanguageResume(value, siteDefault));
+                languageResumeService.create(new LanguageResume(name, siteDefault));
             }
         }
     }
@@ -529,10 +703,10 @@ public class ServiceSJImpl implements ServiceSJ {
         while (iter.hasNext()) {
             Map.Entry<String, JsonElement> t = iter.next();
             String name = t.getValue().toString();
-
-            LangLevel p = langLevelService.findOne(value);
+            name = name.replaceAll("\"", "");
+            LangLevel p = langLevelService.findOne(name);
             if (p == null) {
-                langLevelService.create(new LangLevel(value, siteDefault));
+                langLevelService.create(new LangLevel(name, siteDefault));
             }
         }
     }
@@ -543,10 +717,10 @@ public class ServiceSJImpl implements ServiceSJ {
         while (iter.hasNext()) {
             Map.Entry<String, JsonElement> t = iter.next();
             String name = t.getValue().toString();
-
-            Language p = languageService.findOne(value);
+            name = name.replaceAll("\"", "");
+            Language p = languageService.findOne(name);
             if (p == null) {
-                languageService.create(new Language(value, siteDefault));
+                languageService.create(new Language(name, siteDefault));
             }
         }
     }
@@ -557,10 +731,10 @@ public class ServiceSJImpl implements ServiceSJ {
         while (iter.hasNext()) {
             Map.Entry<String, JsonElement> t = iter.next();
             String name = t.getValue().toString();
-
-            Experience p = experienceService.findOne(value);
+            name = name.replaceAll("\"", "");
+            Experience p = experienceService.findOne(name);
             if (p == null) {
-                experienceService.create(new Experience(value, siteDefault));
+                experienceService.create(new Experience(name, siteDefault));
             }
         }
     }
@@ -571,10 +745,10 @@ public class ServiceSJImpl implements ServiceSJ {
         while (iter.hasNext()) {
             Map.Entry<String, JsonElement> t = iter.next();
             String name = t.getValue().toString();
-
-            Education p = educationService.findOne(value);
+            name = name.replaceAll("\"", "");
+            Education p = educationService.findOne(name);
             if (p == null) {
-                educationService.create(new Education(value, siteDefault));
+                educationService.create(new Education(name, siteDefault));
             }
         }
     }
@@ -585,10 +759,10 @@ public class ServiceSJImpl implements ServiceSJ {
         while (iter.hasNext()) {
             Map.Entry<String, JsonElement> t = iter.next();
             String name = t.getValue().toString();
-
-            PlaceWork p = placeWorkService.findOne(value);
+            name = name.replaceAll("\"", "");
+            PlaceWork p = placeWorkService.findOne(name);
             if (p == null) {
-                placeWorkService.create(new PlaceWork(value, siteDefault));
+                placeWorkService.create(new PlaceWork(name, siteDefault));
             }
         }
     }
@@ -600,12 +774,12 @@ public class ServiceSJImpl implements ServiceSJ {
         while (iter.hasNext()) {
             Map.Entry<String, JsonElement> t = iter.next();
             String name = t.getValue().toString();
-
-            TypeOfWork p = typeOfWorkService.findOne(value);
+            name = name.replaceAll("\"", "");
+            TypeOfWork p = typeOfWorkService.findOne(name);
             if (p == null) {
-                typeOfWorkService.create(new TypeOfWork(value, siteDefault));
+                typeOfWorkService.create(new TypeOfWork(name, siteDefault));
             }
         }
-    }      */
+    }
 
 }
