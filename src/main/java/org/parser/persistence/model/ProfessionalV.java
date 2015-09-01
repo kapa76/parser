@@ -22,11 +22,11 @@ public class ProfessionalV implements Serializable {
     @JoinColumn(name = "id_vacancy")
     private Vacancy vacancylV;
 
-    public ProfessionalV() {
-        super();
-    }
+    @ManyToOne(targetEntity = Professional.class, fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_professional")
+    private Professional professional;
 
-    public ProfessionalV(final String name) {
+    public ProfessionalV() {
         super();
     }
 
@@ -52,5 +52,13 @@ public class ProfessionalV implements Serializable {
 
     public void setVacancylV(Vacancy vacancylV) {
         this.vacancylV = vacancylV;
+    }
+
+    public Professional getProfessional() {
+        return professional;
+    }
+
+    public void setProfessional(Professional professional) {
+        this.professional = professional;
     }
 }

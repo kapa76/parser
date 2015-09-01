@@ -65,7 +65,9 @@
                 <value>org.parser.persistence.model.PlaceWork</value>
                 <value>org.parser.persistence.model.PreviosWorkHistory</value>
                 <value>org.parser.persistence.model.Professional</value>
+                <value>org.parser.persistence.model.ProfessionalV</value>
                 <value>org.parser.persistence.model.ProfessionalDetail</value>
+                <value>org.parser.persistence.model.ProfessionalDetailV</value>
                 <value>org.parser.persistence.model.PropertiesR</value>
                 <value>org.parser.persistence.model.PropertiesV</value>
                 <value>org.parser.persistence.model.PublishedResume</value>

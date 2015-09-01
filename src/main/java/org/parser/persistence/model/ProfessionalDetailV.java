@@ -14,11 +14,11 @@ public class ProfessionalDetailV implements Serializable {
     private long id;
 
     @ManyToOne(targetEntity = ProfessionalDetail.class, fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_professional")
+    @JoinColumn(name = "id_professional_detail")
     private ProfessionalDetail professionalDetail;
 
     @ManyToOne(targetEntity = ProfessionalV.class, fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_vacancy")
+    @JoinColumn(name = "id_professional_v")
     private ProfessionalV professionalV;
 
     public long getId() {
