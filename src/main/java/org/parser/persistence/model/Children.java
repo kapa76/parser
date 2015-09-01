@@ -14,7 +14,7 @@ public class Children implements Serializable {
     private long id;
     @Column(name = "name")
     private String name;
-    @ManyToOne(targetEntity = Site.class, fetch = FetchType.EAGER)
+    @ManyToOne(targetEntity = Site.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "id_site")
     private Site site;
 

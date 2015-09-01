@@ -4,6 +4,7 @@ import javax.persistence.*;
 import java.io.Serializable;
 
 @Entity
+@Table
 public class ProfessionalDetail implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -13,7 +14,7 @@ public class ProfessionalDetail implements Serializable {
     private long id;
     @Column(name = "detail_name")
     private String professionalDetailName;
-    @ManyToOne(targetEntity = Professional.class, fetch = FetchType.EAGER)
+    @ManyToOne(targetEntity = Professional.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "id_professional")
     private Professional professional;
 

@@ -27,10 +27,10 @@ public class PlaceDetail implements Serializable {
     private Date dateTo;
     @Column(name = "company")
     private String company;
-    @ManyToOne(targetEntity = Place.class, fetch = FetchType.EAGER)
+    @ManyToOne(targetEntity = Place.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "id_place")
     private Place place;
-    @ManyToOne(targetEntity = City.class, fetch = FetchType.EAGER)
+    @ManyToOne(targetEntity = City.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "id_city")
     private City city;
 

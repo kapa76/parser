@@ -15,9 +15,9 @@ public class Place implements Serializable {
     private long id;
     @Column(name = "name")
     private String name;
-    @OneToMany(mappedBy = "place", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "place", fetch = FetchType.LAZY)
     private Set<PlaceDetail> placeDetail;
-    @ManyToOne(targetEntity = Resume.class, fetch = FetchType.EAGER)
+    @ManyToOne(targetEntity = Resume.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "id_resume")
     private Resume resume;
 

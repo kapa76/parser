@@ -36,7 +36,12 @@ public class ProfessionalRepository extends AbstractRepo {
 
 
     public Professional update(Professional entity) {
-        return null;
+        Session session = sessionFactory.openSession();
+        Transaction tx = session.beginTransaction();
+        session.update(entity);
+        tx.commit();
+        session.close();
+        return entity;
     }
 
 

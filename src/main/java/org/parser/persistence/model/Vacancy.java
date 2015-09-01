@@ -23,7 +23,7 @@ public class Vacancy implements Serializable {
     private String work;
     @Column(name = "candidat")
     private String candidat;
-    @ManyToOne(targetEntity = Currency.class, fetch = FetchType.EAGER)
+    @ManyToOne(targetEntity = Currency.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "id_currency")
     private Currency currency;
     @Column(name = "compensation")
@@ -40,7 +40,7 @@ public class Vacancy implements Serializable {
     private Double payment_from;
     @Column(name = "internal_id")
     private long internal_id;
-    @ManyToOne(targetEntity = Moveable.class, fetch = FetchType.EAGER)
+    @ManyToOne(targetEntity = Moveable.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "id_moveable")
     private Moveable moveable;
     @Column(name = "agreement")
@@ -51,28 +51,28 @@ public class Vacancy implements Serializable {
     private boolean is_archive;
     @Column(name = "is_storage")
     private boolean is_storage;
-    @ManyToOne(targetEntity = TypeOfWork.class, fetch = FetchType.EAGER)
+    @ManyToOne(targetEntity = TypeOfWork.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "id_type_of_work")
     private TypeOfWork type_of_work;
-    @ManyToOne(targetEntity = PlaceWork.class, fetch = FetchType.EAGER)
+    @ManyToOne(targetEntity = PlaceWork.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "id_place_of_work")
     private PlaceWork placeOfWork;
-    @ManyToOne(targetEntity = Experience.class, fetch = FetchType.EAGER)
+    @ManyToOne(targetEntity = Experience.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "id_experience")
     private Experience experience;
-    @ManyToOne(targetEntity = Education.class, fetch = FetchType.EAGER)
+    @ManyToOne(targetEntity = Education.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "id_education")
     private Education education;
-    @ManyToOne(targetEntity = MaritalStatus.class, fetch = FetchType.EAGER)
+    @ManyToOne(targetEntity = MaritalStatus.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "id_marital_status")
     private MaritalStatus maritalStatus;
-    @ManyToOne(targetEntity = Children.class, fetch = FetchType.EAGER)
+    @ManyToOne(targetEntity = Children.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "id_children")
     private Children children;
-    @ManyToOne(targetEntity = Language.class, fetch = FetchType.EAGER)
+    @ManyToOne(targetEntity = Language.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "id_languages")
     private Language languages;
-    @ManyToOne(targetEntity = Agency.class, fetch = FetchType.EAGER)
+    @ManyToOne(targetEntity = Agency.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "id_agency")
     private Agency agency;
     @Column(name = "company_name")
@@ -105,18 +105,18 @@ public class Vacancy implements Serializable {
     //message_received: false
     //already_sent_on_vacancy: false
     //client_logo: "http://public.superjob.ru/images/clients_logos.ru/2618757_06a595332beb1fba6032729847600979.png"
-    @ManyToOne(targetEntity = Gender.class, fetch = FetchType.EAGER)
+    @ManyToOne(targetEntity = Gender.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "id_gender")
     private Gender gender;
     @Column(name = "company_url")
     private String companyUrl;
-    @ManyToOne(targetEntity = Professional.class, fetch = FetchType.EAGER)
+    @ManyToOne(targetEntity = Professional.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "id_professional")
     private Professional professional;
-    @ManyToOne(targetEntity = ProfessionalDetail.class, fetch = FetchType.EAGER)
+    @ManyToOne(targetEntity = ProfessionalDetail.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "id_prof_detail")
     private ProfessionalDetail professionalDetail;
-    @ManyToOne(targetEntity = City.class, fetch = FetchType.EAGER)
+    @ManyToOne(targetEntity = City.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "id_city")
     private City city;
     @Column(name = "last_update")

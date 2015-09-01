@@ -18,7 +18,7 @@ public class Resume implements Serializable {
     private String name;
     @Column(name = "author")
     private String author;
-    @ManyToOne(targetEntity = Experience.class, fetch = FetchType.EAGER)
+    @ManyToOne(targetEntity = Experience.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "id_experience")
     private Experience experience;
     @Column(name = "last_update")
@@ -27,16 +27,16 @@ public class Resume implements Serializable {
     private int page;
     @Column(name = "condition_search")
     private int conditionSearch;
-    @ManyToOne(targetEntity = City.class, fetch = FetchType.EAGER)
+    @ManyToOne(targetEntity = City.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "id_city")
     private City city;
-    @ManyToOne(targetEntity = Professional.class, fetch = FetchType.EAGER)
+    @ManyToOne(targetEntity = Professional.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "id_professional")
     private Professional professional;
-    @ManyToOne(targetEntity = ProfessionalDetail.class, fetch = FetchType.EAGER)
+    @ManyToOne(targetEntity = ProfessionalDetail.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "id_prof_detail")
     private ProfessionalDetail professionalDetail;
-    @ManyToOne(targetEntity = Place.class, fetch = FetchType.EAGER)
+    @ManyToOne(targetEntity = Place.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "id_place")
     private Place place;
     @Column(name = "id_internal")
@@ -45,7 +45,7 @@ public class Resume implements Serializable {
     private String last_profession;
     @Column(name = "payment_salary")
     private Double paymentSalary;
-    @ManyToOne(targetEntity = Currency.class, fetch = FetchType.EAGER)
+    @ManyToOne(targetEntity = Currency.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "id_currency")
     private Currency currency;
     @Column(name = "birthday")
@@ -59,7 +59,7 @@ public class Resume implements Serializable {
     @Column(name = "address")
     private String address;
     //   metro: [0]
-    @ManyToOne(targetEntity = Citizenship.class, fetch = FetchType.EAGER)
+    @ManyToOne(targetEntity = Citizenship.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "id_citizenship")
     private Citizenship citizenship;
     /*
@@ -75,25 +75,25 @@ public class Resume implements Serializable {
     medium: "http://public.superjob.ru/images/resume_fotos/728/36/31672836.medium_7b2f0ccd9c5e49ad48c693d59ac5768c.jpg"
     large: "http://public.superjob.ru/images/resume_fotos/728/36/31672836.large_7b2f0ccd9c5e49ad48c693d59ac5768c.jpg"
     }-  */
-    @ManyToOne(targetEntity = Moveable.class, fetch = FetchType.EAGER)
+    @ManyToOne(targetEntity = Moveable.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "id_moveable")
     private Moveable moveable;
     @Column(name = "agreement")
     private String agreement;
-    @ManyToOne(targetEntity = TypeOfWork.class, fetch = FetchType.EAGER)
+    @ManyToOne(targetEntity = TypeOfWork.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "id_type_of_work")
     private TypeOfWork type_of_work;
-    @ManyToOne(targetEntity = PlaceWork.class, fetch = FetchType.EAGER)
+    @ManyToOne(targetEntity = PlaceWork.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "id_place_of_work")
     private PlaceWork placeOfWork;
-    @ManyToOne(targetEntity = Children.class, fetch = FetchType.EAGER)
+    @ManyToOne(targetEntity = Children.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "id_children")
     private Children children;
     /*business_trip: {
     id: 2
     title: "Готов"
     }-*/
-    @ManyToOne(targetEntity = MaritalStatus.class, fetch = FetchType.EAGER)
+    @ManyToOne(targetEntity = MaritalStatus.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "id_marital_status")
     private MaritalStatus maritalStatus;
     @Column(name = "experience_text")
@@ -101,7 +101,7 @@ public class Resume implements Serializable {
     @Column(name = "experience_month_count")
     private String experienceMonthCount;
 
-    /*@OneToMany(mappedBy = "professional", fetch = FetchType.EAGER)
+    /*@OneToMany(mappedBy = "professional", fetch = FetchType.LAZY)
       private Set<Properties> languages;
 
     languages: [1]
@@ -123,11 +123,11 @@ public class Resume implements Serializable {
     1:  "C"
     - */
 
-    /*@ManyToOne(targetEntity = Professional.class, fetch = FetchType.EAGER)
+    /*@ManyToOne(targetEntity = Professional.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "id_professional")
     private Professional professional;
 
-    @ManyToOne(targetEntity = ProfessionalDetail.class, fetch = FetchType.EAGER)
+    @ManyToOne(targetEntity = ProfessionalDetail.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "id_prof_detail")
     private ProfessionalDetail professionalDetail;*/
 
@@ -135,13 +135,13 @@ public class Resume implements Serializable {
     id: 3
     title: "Центральный округ"
     }-*/
-    @OneToMany(mappedBy = "resume", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "resume", fetch = FetchType.LAZY)
     private Set<PreviosWorkHistory> previosWorkHistory;
-    @OneToMany(mappedBy = "resume", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "resume", fetch = FetchType.LAZY)
     private Set<EducationHistory> educationHistories;
     @Column(name = "resume_url")
     private String resumeUrl;
-    @ManyToOne(targetEntity = Gender.class, fetch = FetchType.EAGER)
+    @ManyToOne(targetEntity = Gender.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "id_gender")
     private Gender gender;
     @Column(name = "achievements")

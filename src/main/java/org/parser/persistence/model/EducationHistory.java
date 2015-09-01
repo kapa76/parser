@@ -19,15 +19,15 @@ public class EducationHistory implements Serializable {
     private String faculty;
     @Column(name = "profession")
     private String profession;
-    @ManyToOne(targetEntity = EducationTypeResume.class, fetch = FetchType.EAGER)
+    @ManyToOne(targetEntity = EducationTypeResume.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "id_education_type")
     private EducationTypeResume educationType;
-    @ManyToOne(targetEntity = EducationFormResume.class, fetch = FetchType.EAGER)
+    @ManyToOne(targetEntity = EducationFormResume.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "id_education_form")
     private EducationFormResume educationForm;
     @Column(name = "yearend")
     private Integer yearend;
-    @ManyToOne(targetEntity = Resume.class, fetch = FetchType.EAGER)
+    @ManyToOne(targetEntity = Resume.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "id_resume")
     private Resume resume;
 

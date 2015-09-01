@@ -13,10 +13,10 @@ public class PropertiesV implements Serializable {
     private long id;
     @Column(name = "value")
     private String value;
-    @ManyToOne(targetEntity = Language.class, fetch = FetchType.EAGER)
+    @ManyToOne(targetEntity = Language.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "id_language")
     private Language language;
-    @ManyToOne(targetEntity = Vacancy.class, fetch = FetchType.EAGER)
+    @ManyToOne(targetEntity = Vacancy.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "id_vacancy")
     private Vacancy vacancy;
 

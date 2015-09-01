@@ -21,7 +21,7 @@ public class Queuev implements Serializable {
     private Date dateTo;
     @Column(name = "status")
     private String status;
-    @ManyToOne(targetEntity = Vacancy.class, fetch = FetchType.EAGER)
+    @ManyToOne(targetEntity = Vacancy.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "id_vacancy")
     private Vacancy vacancy;
 

@@ -13,14 +13,14 @@ public class PreviosWorkHistory implements Serializable {
     private long id;
     @Column(name = "name")
     private String name;
-    @ManyToOne(targetEntity = City.class, fetch = FetchType.EAGER)
+    @ManyToOne(targetEntity = City.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "id_city")
     private City city;
     @Column(name = "profession")
     private String profession;
     @Column(name = "work")
     private String work;
-    @ManyToOne(targetEntity = WorkType.class, fetch = FetchType.EAGER)
+    @ManyToOne(targetEntity = WorkType.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "id_worktype")
     private WorkType type;
     @Column(name = "monthbeg")
@@ -31,7 +31,7 @@ public class PreviosWorkHistory implements Serializable {
     private Integer yearbeg;
     @Column(name = "yearend")
     private Integer yearend;
-    @ManyToOne(targetEntity = Resume.class, fetch = FetchType.EAGER)
+    @ManyToOne(targetEntity = Resume.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "id_resume")
     private Resume resume;
 

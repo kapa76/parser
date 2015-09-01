@@ -23,9 +23,7 @@ import org.parser.util.CommonUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,11 +40,10 @@ public class ServiceSJImpl implements ServiceSJ {
     private final String SJ_URL = "http://www.superjob.ru/vacancy/search/?period=0&c%5B%5D=1&catalogues=&pay1=&pay0=0&experience=0&type_of_work=0&place_of_work=0&age=&pol=0&education=0&lng=0&lnlev=0&lang0=0&agency=0&moveable=0&active=0&detail_search=1&sbmit=1&extended=0";
     private final String SJ_LOAD_PROPERTIES = "https://api.superjob.ru/2.0/references/";
     private final String SJ_INIT_URL = "http://www.superjob.ru/vacancy/search_form.html";
-
+    private final String SJ_LOAD_PROFESSION = "https://api.superjob.ru/2.0/catalogues/";
 
     @Autowired
     public CityRepository cityService;
-
 
     @Autowired
     public AgencyRepository agencyService;
@@ -62,7 +59,6 @@ public class ServiceSJImpl implements ServiceSJ {
 
     @Autowired
     private CitizenshipRepository citizenshipService;
-
 
     @Autowired
     private CurrencyRepository currencyService;
@@ -169,8 +165,51 @@ public class ServiceSJImpl implements ServiceSJ {
     @Override
     public void init() {
 
-        loadReferencesSJ(SJ_LOAD_PROPERTIES, SiteEnum.superjob);
+        //loadReferencesSJ(SJ_LOAD_PROPERTIES, SiteEnum.superjob);
+        loadProfessionSJ(SJ_LOAD_PROFESSION, SiteEnum.superjob);
 
+    }
+
+    private void loadProfessionSJ(String sj_load_profession, SiteEnum superjob) {
+        siteDefault = siteService.findOne("superjob");
+        try {
+            HttpClient client = HttpClientBuilder.create().build();
+            HttpGet request = new HttpGet(sj_load_profession);
+            HttpResponse response = client.execute(request);
+
+            int returnCode = response.getStatusLine().getStatusCode();
+            System.out.println("Response Code : " + returnCode);  //200
+
+            if (returnCode == 200) {
+                String result = IOUtils.toString(response.getEntity().getContent(), "UTF-8");
+                JsonElement element = new Gson().fromJson(result, JsonElement.class);
+
+                JsonArray array = element.getAsJsonArray();
+                int size = array.size();
+
+                for (int i = 0; i < size; i++) {
+                    String professionName = array.get(i).getAsJsonObject().get("title_rus").getAsString();
+                    Professional professional = new Professional(siteDefault, professionName);
+                    professionalService.create(professional);
+
+                    JsonArray profDetail = array.get(i).getAsJsonObject().get("positions").getAsJsonArray();
+                    int detailSize = profDetail.size();
+                    Set<ProfessionalDetail> setDetail = new HashSet<ProfessionalDetail>();
+                    for (int j = 0; j < detailSize; j++) {
+                        String detail = profDetail.get(j).getAsJsonObject().get("title_rus").getAsString();
+                        ProfessionalDetail pd = new  ProfessionalDetail(professional, detail );
+                        professionalDetailService.create(pd);
+                        setDetail.add(pd);
+                    }
+                    professional.setProfessionalDetail(setDetail);
+                    professional = professionalService.update(professional);
+                }
+
+            }
+
+        } catch (Exception e) {
+            String mesg = e.getMessage();
+        }
     }
 
     @Override

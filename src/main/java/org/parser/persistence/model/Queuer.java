@@ -21,7 +21,7 @@ public class Queuer implements Serializable {
     private Date dateTo;
     @Column(name = "status")
     private String status;
-    @ManyToOne(targetEntity = Resume.class, fetch = FetchType.EAGER)
+    @ManyToOne(targetEntity = Resume.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "id_resume")
     private Resume resume;
 
