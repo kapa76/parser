@@ -4,6 +4,7 @@ package org.parser.persistence.model;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.sql.Date;
+import java.util.Set;
 
 @Entity
 public class Vacancy implements Serializable {
@@ -34,7 +35,7 @@ public class Vacancy implements Serializable {
     @Column(name = "date_pub_to")
     private long date_pub_to;
 
-//    @Column(name = "profession")
+    //    @Column(name = "profession")
 //    private String profession;
     @Column(name = "payment_from")
     private Double payment_from;
@@ -95,34 +96,43 @@ public class Vacancy implements Serializable {
     - */
     @Column(name = "profession")
     private String profession;
+
     @Column(name = "company_descr")
     private String companyDescr;   //firm_activity
+
     @Column(name = "age_from")
     private Integer ageFrom;
+
     @Column(name = "age_to")
     private Integer ageTo;
 
-    //message_received: false
-    //already_sent_on_vacancy: false
-    //client_logo: "http://public.superjob.ru/images/clients_logos.ru/2618757_06a595332beb1fba6032729847600979.png"
     @ManyToOne(targetEntity = Gender.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "id_gender")
     private Gender gender;
+
     @Column(name = "company_url")
     private String companyUrl;
-    @ManyToOne(targetEntity = Professional.class, fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_professional")
-    private Professional professional;
-    @ManyToOne(targetEntity = ProfessionalDetail.class, fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_prof_detail")
-    private ProfessionalDetail professionalDetail;
+
+    @OneToMany(mappedBy = "vacancylV", fetch = FetchType.LAZY)
+    private Set<ProfessionalV> professional;
+
+//    @OneToMany(mappedBy = "professional", fetch = FetchType.LAZY)
+//    private Set<ProfessionalDetail> professionalDetail;
+
+//    @ManyToOne(targetEntity = ProfessionalDetail.class, fetch = FetchType.LAZY)
+//    @JoinColumn(name = "id_prof_detail")
+//    private ProfessionalDetailV professionalDetail;
+
     @ManyToOne(targetEntity = City.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "id_city")
     private City city;
+
     @Column(name = "last_update")
     private Date lastUpdate;
+
     @Column(name = "page")
     private int page;
+
     @Column(name = "condition_search")
     private int conditionSearch;
 
@@ -141,14 +151,6 @@ public class Vacancy implements Serializable {
 
     public void setId(long id) {
         this.id = id;
-    }
-
-    public Professional getProfessional() {
-        return professional;
-    }
-
-    public void setProfessional(Professional professional) {
-        this.professional = professional;
     }
 
     public Long getId_client() {
@@ -397,14 +399,6 @@ public class Vacancy implements Serializable {
 
     public void setCompanyUrl(String companyUrl) {
         this.companyUrl = companyUrl;
-    }
-
-    public ProfessionalDetail getProfessionalDetail() {
-        return professionalDetail;
-    }
-
-    public void setProfessionalDetail(ProfessionalDetail professionalDetail) {
-        this.professionalDetail = professionalDetail;
     }
 
     public City getCity() {

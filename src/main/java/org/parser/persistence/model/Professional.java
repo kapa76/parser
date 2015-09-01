@@ -12,11 +12,14 @@ public class Professional implements Serializable {
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "ID")
     private long id;
+
     @Column(name = "professional_name")
     private String professionalName;
+
     @ManyToOne(targetEntity = Site.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "id_site")
     private Site site;
+
     @OneToMany(mappedBy = "professional", fetch = FetchType.LAZY)
     private Set<ProfessionalDetail> professionalDetail;
 
