@@ -2,7 +2,7 @@ package org.parser.persistence.repository.hibernate;
 
 
 import org.parser.persistence.model.*;
-import org.springframework.stereotype.Repository;
+import org.hibernate.Session; import org.hibernate.Transaction; import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
@@ -10,12 +10,12 @@ import java.util.List;
 public class CitizenshipRepository extends AbstractRepo {
 
     public Citizenship findOne(Long id) {
-        return (Citizenship) sessionFactory.openSession().get(Citizenship.class, id);
+        return (Citizenship) sessionFactory.getCurrentSession().get(Citizenship.class, id);
     }
 
 
     public Citizenship findOne(String name) {
-        return (Citizenship)sessionFactory.openSession().createQuery("from citizenship p where p.name = :name").setParameter("name", name).uniqueResult();
+        return (Citizenship)sessionFactory.getCurrentSession().createQuery("from citizenship p where p.name = :name").setParameter("name", name).uniqueResult();
     }
 
 
@@ -25,7 +25,7 @@ public class CitizenshipRepository extends AbstractRepo {
 
 
     public void create(Citizenship entity) {
-        sessionFactory.openSession().save(entity);
+        Session session = sessionFactory.openSession();         Transaction tx = session.beginTransaction();         session.save(entity);         tx.commit();         session.close();
     }
 
 

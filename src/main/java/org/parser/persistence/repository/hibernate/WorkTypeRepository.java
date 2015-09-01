@@ -2,7 +2,7 @@ package org.parser.persistence.repository.hibernate;
 
 
 import org.parser.persistence.model.*;
-import org.springframework.stereotype.Repository;
+import org.hibernate.Session; import org.hibernate.Transaction; import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
@@ -10,7 +10,7 @@ import java.util.List;
 public class WorkTypeRepository extends AbstractRepo {
 
     public WorkType findOne(Long id) {
-        return (WorkType) sessionFactory.openSession().get(WorkType.class, id);
+        return (WorkType) sessionFactory.getCurrentSession().get(WorkType.class, id);
     }
 
 
@@ -25,7 +25,7 @@ public class WorkTypeRepository extends AbstractRepo {
 
 
     public void create(WorkType entity) {
-        sessionFactory.openSession().save(entity);
+        Session session = sessionFactory.openSession();         Transaction tx = session.beginTransaction();         session.save(entity);         tx.commit();         session.close();
     }
 
 

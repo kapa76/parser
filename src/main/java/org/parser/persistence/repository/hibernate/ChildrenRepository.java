@@ -2,7 +2,7 @@ package org.parser.persistence.repository.hibernate;
 
 
 import org.parser.persistence.model.Children;
-import org.springframework.stereotype.Repository;
+import org.hibernate.Session; import org.hibernate.Transaction; import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
@@ -10,12 +10,12 @@ import java.util.List;
 public class ChildrenRepository extends AbstractRepo {
 
     public Children findOne(Long id) {
-        return (Children) sessionFactory.openSession().get(Children.class, id);
+        return (Children) sessionFactory.getCurrentSession().get(Children.class, id);
     }
 
 
     public Children findOne(String name) {
-        return (Children)sessionFactory.openSession().createQuery("from children p where p.name = :name").setParameter("name", name).uniqueResult();
+        return (Children)sessionFactory.getCurrentSession().createQuery("from children p where p.name = :name").setParameter("name", name).uniqueResult();
     }
 
 
@@ -25,7 +25,7 @@ public class ChildrenRepository extends AbstractRepo {
 
 
     public void create(Children entity) {
-        sessionFactory.openSession().save(entity);
+        Session session = sessionFactory.openSession();         Transaction tx = session.beginTransaction();         session.save(entity);         tx.commit();         session.close();
     }
 
 

@@ -1,8 +1,10 @@
 package org.parser.persistence.repository.hibernate;
 
 
+import org.hibernate.Session;
+import org.hibernate.Transaction;
 import org.parser.persistence.model.*;
-import org.springframework.stereotype.Repository;
+import org.hibernate.Session; import org.hibernate.Transaction; import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
@@ -10,7 +12,7 @@ import java.util.List;
 public class VacancyRepository extends AbstractRepo {
 
     public Vacancy findOne(Long id) {
-        return (Vacancy) sessionFactory.openSession().get(Vacancy.class, id);
+        return (Vacancy) sessionFactory.getCurrentSession().get(Vacancy.class, id);
     }
 
 
@@ -25,7 +27,11 @@ public class VacancyRepository extends AbstractRepo {
 
 
     public void create(Vacancy entity) {
-        sessionFactory.openSession().save(entity);
+        Session session = sessionFactory.openSession();
+        Transaction tx = session.beginTransaction();
+        session.save(entity);
+        if(this.isCommit()) tx.commit();
+        session.close();
     }
 
 

@@ -2,7 +2,7 @@ package org.parser.persistence.repository.hibernate;
 
 
 import org.parser.persistence.model.*;
-import org.springframework.stereotype.Repository;
+import org.hibernate.Session; import org.hibernate.Transaction; import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
@@ -10,7 +10,7 @@ import java.util.List;
 public class GenderRepository extends AbstractRepo {
 
     public Gender findOne(Long id) {
-        return (Gender) sessionFactory.openSession().get(Gender.class, id);
+        return (Gender) sessionFactory.getCurrentSession().get(Gender.class, id);
     }
 
 
@@ -25,7 +25,7 @@ public class GenderRepository extends AbstractRepo {
 
 
     public void create(Gender entity) {
-        sessionFactory.openSession().save(entity);
+        Session session = sessionFactory.openSession();         Transaction tx = session.beginTransaction();         session.save(entity);         tx.commit();         session.close();
     }
 
     public Gender update(Gender entity) {

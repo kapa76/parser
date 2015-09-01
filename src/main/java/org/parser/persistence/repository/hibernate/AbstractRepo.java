@@ -8,5 +8,13 @@ public class AbstractRepo {
     @Autowired
     public SessionFactory sessionFactory;
 
+    private boolean commit;
 
+    public boolean isCommit() {
+        return commit;
+    }
+
+    public void setCommit(boolean commit) {
+        this.commit = commit;
+    }
 }

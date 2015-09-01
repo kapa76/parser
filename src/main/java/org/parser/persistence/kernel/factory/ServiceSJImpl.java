@@ -1,6 +1,7 @@
 package org.parser.persistence.kernel.factory;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import org.apache.commons.io.IOUtils;
@@ -19,8 +20,11 @@ import org.parser.persistence.model.*;
 import org.parser.persistence.model.Currency;
 import org.parser.persistence.repository.hibernate.*;
 import org.parser.util.CommonUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,6 +35,9 @@ import java.util.*;
 @Service
 @Transactional
 public class ServiceSJImpl implements ServiceSJ {
+
+    private static final Logger logger =
+            LoggerFactory.getLogger(ServiceSJImpl.class);
 
     private final String SJ_URL = "http://www.superjob.ru/vacancy/search/?period=0&c%5B%5D=1&catalogues=&pay1=&pay0=0&experience=0&type_of_work=0&place_of_work=0&age=&pol=0&education=0&lng=0&lnlev=0&lang0=0&agency=0&moveable=0&active=0&detail_search=1&sbmit=1&extended=0";
     private final String SJ_LOAD_PROPERTIES = "https://api.superjob.ru/2.0/references/";
@@ -207,9 +214,11 @@ public class ServiceSJImpl implements ServiceSJ {
 
                 saveVacancy(sPage.getVacancyJsonObject());
 
-                more = false;
-                //more = sPage.getMore();
+                //more = false;
+                more = sPage.getMore();
                 page++;
+                if (page % 10 == 0)
+                    vacancyService.setCommit(true);
             }
         }
     }
@@ -267,33 +276,18 @@ public class ServiceSJImpl implements ServiceSJ {
                 String val = t.get("languages").getAsJsonObject().get("title").getAsString();
                 v.setLanguages(languageService.findOne(val));
             }
-            if (t.get("catalogues").isJsonObject()) {
-                //String val = t.get("catalogues").getAsJsonObject().get("title").getAsString();
-                //v.setCaLanguages(languageService.findOne(val));
-            /*
-                    catalogues: [2]
-                    0:  {
-                    id: 327
-                    title: "Промышленность, производство"
-                    positions: [1]
-                    0:  {
-                    id: 334
-                    title: "Легкая промышленность"
-                    }-
-                    -
-                    }-
-                    1:  {
-                    id: 362
-                    title: "Услуги, ремонт, сервисное обслуживание"
-                    positions: [1]
-                    0:  {
-                    id: 364
-                    title: "Ателье"
-                    }-
-                    -
-                    }*/
-            }
+            if (t.get("catalogues").isJsonArray()) {
+                if (t.get("catalogues").getAsJsonArray().size() > 0) {
+                    String pValue = t.get("catalogues").getAsJsonArray().get(0).getAsJsonObject().get("title").getAsString().replaceAll("\"", "");
+                    int size = t.get("catalogues").getAsJsonArray().get(0).getAsJsonObject().get("positions").getAsJsonArray().size();
 
+                    Professional p = professionalService.findOne(pValue);
+                    for (int i = 0; i < size; i++) {
+                        String pdValue = t.get("catalogues").getAsJsonArray().get(0).getAsJsonObject().get("positions").getAsJsonArray().get(i).getAsJsonObject().get("title").getAsString().replaceAll("\"", "");
+                        ProfessionalDetail pd = professionalDetailService.findOne(pdValue);
+                    }
+                }
+            }
             if (t.get("agency").isJsonObject()) {
                 String val = t.get("agency").getAsJsonObject().get("title").getAsString();
                 v.setAgency(agencyService.findOne(val));
@@ -312,7 +306,15 @@ public class ServiceSJImpl implements ServiceSJ {
             v.setCompanyDescr(CommonUtils.isNullNull(t.get("firm_activity")));
             v.setCompanyUrl(CommonUtils.isNullNull(t.get("link")));
             v.setCompanyName(CommonUtils.isNullNull(t.get("firm_name")));
-            vacancyService.create(v);
+            try {
+                vacancyService.create(v);
+                logger.debug("Save vacancy: " + v.getId_client());
+            } catch (DataIntegrityViolationException exception) {
+                //save to history error
+
+                String mesg = exception.getMessage();
+
+            }
         }
     }
 

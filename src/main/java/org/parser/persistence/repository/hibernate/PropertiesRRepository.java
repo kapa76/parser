@@ -2,7 +2,7 @@ package org.parser.persistence.repository.hibernate;
 
 
 import org.parser.persistence.model.*;
-import org.springframework.stereotype.Repository;
+import org.hibernate.Session; import org.hibernate.Transaction; import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
@@ -11,7 +11,7 @@ public class PropertiesRRepository extends AbstractRepo {
 
     public PropertiesR findOne(Long id) {
         return
-                (PropertiesR) sessionFactory.openSession().get(PropertiesR.class, id);
+                (PropertiesR) sessionFactory.getCurrentSession().get(PropertiesR.class, id);
     }
 
 
@@ -26,7 +26,7 @@ public class PropertiesRRepository extends AbstractRepo {
 
 
     public void create(PropertiesR entity) {
-        sessionFactory.openSession().save(entity);
+        Session session = sessionFactory.openSession();         Transaction tx = session.beginTransaction();         session.save(entity);         tx.commit();         session.close();
     }
 
 

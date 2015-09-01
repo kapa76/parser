@@ -2,7 +2,7 @@ package org.parser.persistence.repository.hibernate;
 
 
 import org.parser.persistence.model.*;
-import org.springframework.stereotype.Repository;
+import org.hibernate.Session; import org.hibernate.Transaction; import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
@@ -10,7 +10,7 @@ import java.util.List;
 public class EducationRepository extends AbstractRepo {
 
     public Education findOne(Long id) {
-        return (Education) sessionFactory.openSession().get(Education.class, id);
+        return (Education) sessionFactory.getCurrentSession().get(Education.class, id);
     }
 
 
@@ -25,7 +25,7 @@ public class EducationRepository extends AbstractRepo {
 
 
     public void create(Education entity) {
-        sessionFactory.openSession().save(entity);
+        Session session = sessionFactory.openSession();         Transaction tx = session.beginTransaction();         session.save(entity);         tx.commit();         session.close();
     }
 
 
