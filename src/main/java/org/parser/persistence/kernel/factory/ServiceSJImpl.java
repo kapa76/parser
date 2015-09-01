@@ -159,13 +159,19 @@ public class ServiceSJImpl implements ServiceSJ {
     @Autowired
     private WorkTypeRepository workTypeService;
 
+    @Autowired
+    private ProfessionalVRepository professionalVRepository;
+
+    @Autowired
+    private ProfessionalDetailVRepository professionalDetailVRepository;
+
 
     private Site siteDefault = null;
 
     @Override
     public void init() {
 
-        //loadReferencesSJ(SJ_LOAD_PROPERTIES, SiteEnum.superjob);
+        loadReferencesSJ(SJ_LOAD_PROPERTIES, SiteEnum.superjob);
         loadProfessionSJ(SJ_LOAD_PROFESSION, SiteEnum.superjob);
 
     }
@@ -197,7 +203,7 @@ public class ServiceSJImpl implements ServiceSJ {
                     Set<ProfessionalDetail> setDetail = new HashSet<ProfessionalDetail>();
                     for (int j = 0; j < detailSize; j++) {
                         String detail = profDetail.get(j).getAsJsonObject().get("title_rus").getAsString();
-                        ProfessionalDetail pd = new  ProfessionalDetail(professional, detail );
+                        ProfessionalDetail pd = new ProfessionalDetail(professional, detail);
                         professionalDetailService.create(pd);
                         setDetail.add(pd);
                     }
@@ -315,16 +321,28 @@ public class ServiceSJImpl implements ServiceSJ {
                 String val = t.get("languages").getAsJsonObject().get("title").getAsString();
                 v.setLanguages(languageService.findOne(val));
             }
+            ProfessionalV pv = null;
             if (t.get("catalogues").isJsonArray()) {
                 if (t.get("catalogues").getAsJsonArray().size() > 0) {
                     String pValue = t.get("catalogues").getAsJsonArray().get(0).getAsJsonObject().get("title").getAsString().replaceAll("\"", "");
                     int size = t.get("catalogues").getAsJsonArray().get(0).getAsJsonObject().get("positions").getAsJsonArray().size();
 
                     Professional p = professionalService.findOne(pValue);
+
+                    pv = new ProfessionalV(p);
+                    professionalVRepository.create(pv);
+
+                    Set<ProfessionalDetailV> setPdv = new HashSet<>();
                     for (int i = 0; i < size; i++) {
                         String pdValue = t.get("catalogues").getAsJsonArray().get(0).getAsJsonObject().get("positions").getAsJsonArray().get(i).getAsJsonObject().get("title").getAsString().replaceAll("\"", "");
+
                         ProfessionalDetail pd = professionalDetailService.findOne(pdValue);
+                        ProfessionalDetailV pdv = new ProfessionalDetailV(pd, pv);
+                        professionalDetailVRepository.create(pdv);
+                        setPdv.add(pdv);
                     }
+                    pv.setProfessionalDetailV(setPdv);
+                    professionalVRepository.update(pv);
                 }
             }
             if (t.get("agency").isJsonObject()) {
@@ -347,6 +365,10 @@ public class ServiceSJImpl implements ServiceSJ {
             v.setCompanyName(CommonUtils.isNullNull(t.get("firm_name")));
             try {
                 vacancyService.create(v);
+                pv.setVacancylV(v);
+
+                professionalVRepository.update(pv);
+
                 logger.debug("Save vacancy: " + v.getId_client());
             } catch (DataIntegrityViolationException exception) {
                 //save to history error
@@ -453,29 +475,8 @@ public class ServiceSJImpl implements ServiceSJ {
         }
     }
 
-
-    /*private void CheckCreateClass(JsonElement element, String value, Class className) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
-        Class cl = className;
-
-        Object obj = cl.getDeclaredConstructor(className).newInstance(value);
-        Iterator<Map.Entry<String, JsonElement>> iter = element.getAsJsonObject().getAsJsonObject(value).entrySet().iterator();
-                List<String> tval = new ArrayList<String>();
-                while (iter.hasNext()) {
-                    Map.Entry<String, JsonElement> t = iter.next();
-                    String name = t.getValue().toString();
-
-                    PlaceWork p = placeWorkService.findOne(name, siteService.findOne(siteDefault.getName()).getId());
-                    if (p == null) {
-                        placeWorkService.create(obj);
-                    }
-                }
-
-    } */
-
-
     public void SocialLinksResumeServiceInit(JsonElement element, String value) {
         Iterator<Map.Entry<String, JsonElement>> iter = element.getAsJsonObject().getAsJsonObject(value).entrySet().iterator();
-        List<String> tval = new ArrayList<String>();
         while (iter.hasNext()) {
             Map.Entry<String, JsonElement> t = iter.next();
             String name = t.getValue().toString();
@@ -531,7 +532,6 @@ public class ServiceSJImpl implements ServiceSJ {
 
     public void CitizenshipServiceInit(JsonElement element, String value) {
         Iterator<Map.Entry<String, JsonElement>> iter = element.getAsJsonObject().getAsJsonObject(value).entrySet().iterator();
-        List<String> tval = new ArrayList<String>();
         while (iter.hasNext()) {
             Map.Entry<String, JsonElement> t = iter.next();
             String name = t.getValue().toString();
@@ -545,7 +545,6 @@ public class ServiceSJImpl implements ServiceSJ {
 
     public void WorkTypeServiceInit(JsonElement element, String value) {
         Iterator<Map.Entry<String, JsonElement>> iter = element.getAsJsonObject().getAsJsonObject(value).entrySet().iterator();
-        List<String> tval = new ArrayList<String>();
         while (iter.hasNext()) {
             Map.Entry<String, JsonElement> t = iter.next();
             String name = t.getValue().toString();
@@ -559,7 +558,6 @@ public class ServiceSJImpl implements ServiceSJ {
 
     public void EducationTypeResumeServiceInit(JsonElement element, String value) {
         Iterator<Map.Entry<String, JsonElement>> iter = element.getAsJsonObject().getAsJsonObject(value).entrySet().iterator();
-        List<String> tval = new ArrayList<String>();
         while (iter.hasNext()) {
             Map.Entry<String, JsonElement> t = iter.next();
             String name = t.getValue().toString();
@@ -573,7 +571,6 @@ public class ServiceSJImpl implements ServiceSJ {
 
     public void EducationFormResumeServiceInit(JsonElement element, String value) {
         Iterator<Map.Entry<String, JsonElement>> iter = element.getAsJsonObject().getAsJsonObject(value).entrySet().iterator();
-        List<String> tval = new ArrayList<String>();
         while (iter.hasNext()) {
             Map.Entry<String, JsonElement> t = iter.next();
             String name = t.getValue().toString();
@@ -587,7 +584,6 @@ public class ServiceSJImpl implements ServiceSJ {
 
     public void CurrencyServiceInit(JsonElement element, String value) {
         Iterator<Map.Entry<String, JsonElement>> iter = element.getAsJsonObject().getAsJsonObject(value).entrySet().iterator();
-        List<String> tval = new ArrayList<String>();
         while (iter.hasNext()) {
             Map.Entry<String, JsonElement> t = iter.next();
             String name = t.getValue().toString();
@@ -601,7 +597,6 @@ public class ServiceSJImpl implements ServiceSJ {
 
     public void GenderServiceInit(JsonElement element, String value) {
         Iterator<Map.Entry<String, JsonElement>> iter = element.getAsJsonObject().getAsJsonObject(value).entrySet().iterator();
-        List<String> tval = new ArrayList<String>();
         while (iter.hasNext()) {
             Map.Entry<String, JsonElement> t = iter.next();
             String name = t.getValue().toString();
@@ -615,7 +610,6 @@ public class ServiceSJImpl implements ServiceSJ {
 
     public void AgencyServiceInit(JsonElement element, String value) {
         Iterator<Map.Entry<String, JsonElement>> iter = element.getAsJsonObject().getAsJsonObject(value).entrySet().iterator();
-        List<String> tval = new ArrayList<String>();
         while (iter.hasNext()) {
             Map.Entry<String, JsonElement> t = iter.next();
             String name = t.getValue().toString();
@@ -628,22 +622,20 @@ public class ServiceSJImpl implements ServiceSJ {
     }
 
     public void MaritalStatusResumeGenderServiceInit(JsonElement element, String value) {
-        Iterator<Map.Entry<String, JsonElement>> iter = element.getAsJsonObject().getAsJsonObject(value).entrySet().iterator();
-        List<String> tval = new ArrayList<String>();
-        while (iter.hasNext()) {
-            Map.Entry<String, JsonElement> t = iter.next();
-            String name = t.getValue().toString();
-            name = name.replaceAll("\"", "");
-            MaritalStatusResumeGender p = maritalStatusResumeGenderService.findOne(name, siteService.findOne(siteDefault.getName()).getId());
-            if (p == null) {
-                maritalStatusResumeGenderService.create(new MaritalStatusResumeGender(name, siteDefault));
+        for (Map.Entry<String, JsonElement> mp : element.getAsJsonObject().getAsJsonObject(value).entrySet()) {
+            JsonObject o = mp.getValue().getAsJsonObject();
+            for (Map.Entry<String, JsonElement> mapEntry : o.entrySet()) {
+                String name = mapEntry.getValue().getAsString();
+                MaritalStatusResumeGender p = maritalStatusResumeGenderService.findOne(name, siteService.findOne(siteDefault.getName()).getId());
+                if (p == null) {
+                    maritalStatusResumeGenderService.create(new MaritalStatusResumeGender(name, siteDefault));
+                }
             }
         }
     }
 
     public void ChildrenServiceInit(JsonElement element, String value) {
         Iterator<Map.Entry<String, JsonElement>> iter = element.getAsJsonObject().getAsJsonObject(value).entrySet().iterator();
-        List<String> tval = new ArrayList<String>();
         while (iter.hasNext()) {
             Map.Entry<String, JsonElement> t = iter.next();
             String name = t.getValue().toString();
@@ -657,7 +649,6 @@ public class ServiceSJImpl implements ServiceSJ {
 
     public void ChildrenResumeServiceInit(JsonElement element, String value) {
         Iterator<Map.Entry<String, JsonElement>> iter = element.getAsJsonObject().getAsJsonObject(value).entrySet().iterator();
-        List<String> tval = new ArrayList<String>();
         while (iter.hasNext()) {
             Map.Entry<String, JsonElement> t = iter.next();
             String name = t.getValue().toString();
@@ -671,7 +662,6 @@ public class ServiceSJImpl implements ServiceSJ {
 
     public void MaritalStatusResumeServiceInit(JsonElement element, String value) {
         Iterator<Map.Entry<String, JsonElement>> iter = element.getAsJsonObject().getAsJsonObject(value).entrySet().iterator();
-        List<String> tval = new ArrayList<String>();
         while (iter.hasNext()) {
             Map.Entry<String, JsonElement> t = iter.next();
             String name = t.getValue().toString();
@@ -685,7 +675,6 @@ public class ServiceSJImpl implements ServiceSJ {
 
     public void GenderResumeServiceInit(JsonElement element, String value) {
         Iterator<Map.Entry<String, JsonElement>> iter = element.getAsJsonObject().getAsJsonObject(value).entrySet().iterator();
-        List<String> tval = new ArrayList<String>();
         while (iter.hasNext()) {
             Map.Entry<String, JsonElement> t = iter.next();
             String name = t.getValue().toString();
@@ -699,7 +688,6 @@ public class ServiceSJImpl implements ServiceSJ {
 
     public void MaritalStatusServiceInit(JsonElement element, String value) {
         Iterator<Map.Entry<String, JsonElement>> iter = element.getAsJsonObject().getAsJsonObject(value).entrySet().iterator();
-        List<String> tval = new ArrayList<String>();
         while (iter.hasNext()) {
             Map.Entry<String, JsonElement> t = iter.next();
             String name = t.getValue().toString();
@@ -713,7 +701,6 @@ public class ServiceSJImpl implements ServiceSJ {
 
     public void LangLevelResumeServiceInit(JsonElement element, String value) {
         Iterator<Map.Entry<String, JsonElement>> iter = element.getAsJsonObject().getAsJsonObject(value).entrySet().iterator();
-        List<String> tval = new ArrayList<String>();
         while (iter.hasNext()) {
             Map.Entry<String, JsonElement> t = iter.next();
             String name = t.getValue().toString();
@@ -727,7 +714,6 @@ public class ServiceSJImpl implements ServiceSJ {
 
     public void LanguageResumeServiceInit(JsonElement element, String value) {
         Iterator<Map.Entry<String, JsonElement>> iter = element.getAsJsonObject().getAsJsonObject(value).entrySet().iterator();
-        List<String> tval = new ArrayList<String>();
         while (iter.hasNext()) {
             Map.Entry<String, JsonElement> t = iter.next();
             String name = t.getValue().toString();
@@ -741,7 +727,6 @@ public class ServiceSJImpl implements ServiceSJ {
 
     public void LangLevelServiceInit(JsonElement element, String value) {
         Iterator<Map.Entry<String, JsonElement>> iter = element.getAsJsonObject().getAsJsonObject(value).entrySet().iterator();
-        List<String> tval = new ArrayList<String>();
         while (iter.hasNext()) {
             Map.Entry<String, JsonElement> t = iter.next();
             String name = t.getValue().toString();
@@ -755,7 +740,6 @@ public class ServiceSJImpl implements ServiceSJ {
 
     public void LanguageServiceInit(JsonElement element, String value) {
         Iterator<Map.Entry<String, JsonElement>> iter = element.getAsJsonObject().getAsJsonObject(value).entrySet().iterator();
-        List<String> tval = new ArrayList<String>();
         while (iter.hasNext()) {
             Map.Entry<String, JsonElement> t = iter.next();
             String name = t.getValue().toString();
@@ -769,7 +753,6 @@ public class ServiceSJImpl implements ServiceSJ {
 
     public void ExperienceServiceInit(JsonElement element, String value) {
         Iterator<Map.Entry<String, JsonElement>> iter = element.getAsJsonObject().getAsJsonObject(value).entrySet().iterator();
-        List<String> tval = new ArrayList<String>();
         while (iter.hasNext()) {
             Map.Entry<String, JsonElement> t = iter.next();
             String name = t.getValue().toString();
@@ -783,7 +766,6 @@ public class ServiceSJImpl implements ServiceSJ {
 
     public void EducationServiceInit(JsonElement element, String value) {
         Iterator<Map.Entry<String, JsonElement>> iter = element.getAsJsonObject().getAsJsonObject(value).entrySet().iterator();
-        List<String> tval = new ArrayList<String>();
         while (iter.hasNext()) {
             Map.Entry<String, JsonElement> t = iter.next();
             String name = t.getValue().toString();
@@ -797,7 +779,6 @@ public class ServiceSJImpl implements ServiceSJ {
 
     public void PlaceWorkServiceInit(JsonElement element, String value) {
         Iterator<Map.Entry<String, JsonElement>> iter = element.getAsJsonObject().getAsJsonObject(value).entrySet().iterator();
-        List<String> tval = new ArrayList<String>();
         while (iter.hasNext()) {
             Map.Entry<String, JsonElement> t = iter.next();
             String name = t.getValue().toString();
@@ -809,10 +790,8 @@ public class ServiceSJImpl implements ServiceSJ {
         }
     }
 
-
     public void TypeOfWorkServiceInit(JsonElement element, String value) {
         Iterator<Map.Entry<String, JsonElement>> iter = element.getAsJsonObject().getAsJsonObject(value).entrySet().iterator();
-        List<String> tval = new ArrayList<String>();
         while (iter.hasNext()) {
             Map.Entry<String, JsonElement> t = iter.next();
             String name = t.getValue().toString();
@@ -823,5 +802,4 @@ public class ServiceSJImpl implements ServiceSJ {
             }
         }
     }
-
 }

@@ -116,13 +116,6 @@ public class Vacancy implements Serializable {
     @OneToMany(mappedBy = "vacancylV", fetch = FetchType.LAZY)
     private Set<ProfessionalV> professional;
 
-//    @OneToMany(mappedBy = "professional", fetch = FetchType.LAZY)
-//    private Set<ProfessionalDetail> professionalDetail;
-
-//    @ManyToOne(targetEntity = ProfessionalDetail.class, fetch = FetchType.LAZY)
-//    @JoinColumn(name = "id_prof_detail")
-//    private ProfessionalDetailV professionalDetail;
-
     @ManyToOne(targetEntity = City.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "id_city")
     private City city;

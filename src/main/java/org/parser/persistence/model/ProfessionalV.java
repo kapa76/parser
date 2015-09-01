@@ -30,6 +30,11 @@ public class ProfessionalV implements Serializable {
         super();
     }
 
+    public ProfessionalV(Professional p) {
+        super();
+        this.professional = p;
+    }
+
     public long getId() {
         return id;
     }

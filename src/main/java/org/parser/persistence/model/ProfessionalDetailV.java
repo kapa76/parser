@@ -21,6 +21,21 @@ public class ProfessionalDetailV implements Serializable {
     @JoinColumn(name = "id_professional_v")
     private ProfessionalV professionalV;
 
+    public ProfessionalDetailV() {
+        super();
+    }
+
+    public ProfessionalDetailV(ProfessionalDetail pd) {
+        super();
+        this.professionalDetail = pd;
+    }
+
+    public ProfessionalDetailV(ProfessionalDetail pd, ProfessionalV pv) {
+        super();
+        this.professionalDetail = pd;
+        this.professionalV = pv;
+    }
+
     public long getId() {
         return id;
     }
