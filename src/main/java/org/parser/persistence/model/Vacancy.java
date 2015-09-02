@@ -3,6 +3,7 @@ package org.parser.persistence.model;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.sql.Blob;
 import java.sql.Date;
 import java.util.List;
 import java.util.Set;
@@ -26,18 +27,18 @@ public class Vacancy implements Serializable {
     @Column(name = "payment")
     private Double payment;
 
-    @Column(name = "work", length = 1024)
-    private String work;
+    @Column(name = "work")
+    private byte[] work;
 
-    @Column(name = "candidat", length = 1024)
-    private String candidat;
+    @Column(name = "candidat")
+    private  byte[] candidat;
 
     @ManyToOne(targetEntity = Currency.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "id_currency")
     private Currency currency;
 
-    @Column(name = "compensation", length = 4096)
-    private String compensation;
+    @Column(name = "compensation")
+    private  byte[] compensation;
     /**/
     @Column(name = "address")
     private String address;
@@ -192,19 +193,19 @@ public class Vacancy implements Serializable {
         this.payment = payment;
     }
 
-    public String getWork() {
+    public  byte[] getWork() {
         return work;
     }
 
-    public void setWork(String work) {
+    public void setWork( byte[] work) {
         this.work = work;
     }
 
-    public String getCandidat() {
+    public  byte[] getCandidat() {
         return candidat;
     }
 
-    public void setCandidat(String candidat) {
+    public void setCandidat( byte[] candidat) {
         this.candidat = candidat;
     }
 
@@ -216,11 +217,11 @@ public class Vacancy implements Serializable {
         this.currency = currency;
     }
 
-    public String getCompensation() {
+    public  byte[] getCompensation() {
         return compensation;
     }
 
-    public void setCompensation(String compensation) {
+    public void setCompensation( byte[] compensation) {
         this.compensation = compensation;
     }
 

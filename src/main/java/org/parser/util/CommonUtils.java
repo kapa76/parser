@@ -15,4 +15,12 @@ public class CommonUtils {
             return elem.getAsString().replaceAll("\"", "");
         }
     }
+
+    public static byte[] isNullByte(JsonElement elem) {
+        if ( elem.isJsonNull() ){
+            return null;
+        } else {
+            return elem.getAsString().replaceAll("\"", "").getBytes();
+        }
+    }
 }

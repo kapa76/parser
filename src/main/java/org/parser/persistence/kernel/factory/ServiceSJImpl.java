@@ -246,7 +246,7 @@ public class ServiceSJImpl implements ServiceSJ {
         int lastPage;
 
         Integer period = 0;//за все время
-        Integer count = 20; // - на странице
+        Integer count = 100; // - на странице
         Integer page = 0; // номер страницы
         //если more = true -> есть что качать.
         boolean more = true;
@@ -294,10 +294,10 @@ public class ServiceSJImpl implements ServiceSJ {
             v.setId_client(t.get("id_client").getAsLong());
             v.setPayment(t.get("payment_to").getAsDouble());
             v.setDatePublished(t.get("date_published").getAsLong());
-            v.setWork(CommonUtils.isNullNull(t.get("work")));
-            v.setCandidat(CommonUtils.isNullNull(t.get("candidat")));
+            v.setWork(CommonUtils.isNullByte(t.get("work")));
+            v.setCandidat(CommonUtils.isNullByte(t.get("candidat")));
             v.setCurrency(currencyService.findOne(CommonUtils.isNullNull(t.get("currency"))));
-            v.setCompensation(CommonUtils.isNullNull(t.get("compensation")));
+            v.setCompensation(CommonUtils.isNullByte(t.get("compensation")));
             v.setProfession(t.get("profession").getAsString());
             v.setAddress(CommonUtils.isNullNull(t.get("address")));
             v.setDate_pub_to(t.get("date_pub_to").getAsLong());
@@ -372,7 +372,11 @@ public class ServiceSJImpl implements ServiceSJ {
                 String val = t.get("town").getAsJsonObject().get("title").getAsString();
                 City city = cityService.findOne(val);
                 if (city == null) {
-                    cityService.create(new City(val));
+                    try {
+                        cityService.create(new City(val));
+                    } catch(Exception e){
+                        logger.debug("Exception add city: " + e.getMessage());
+                    }
                 }
                 v.setCity(city);
             }
@@ -398,7 +402,7 @@ public class ServiceSJImpl implements ServiceSJ {
                 //save to history error
 
                 String mesg = exception.getMessage();
-                                      //   v.getCandidat().length()
+                                      //   v.getWork().length()
             }
         }
     }

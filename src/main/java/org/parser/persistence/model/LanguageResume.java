@@ -11,8 +11,10 @@ public class LanguageResume implements Serializable {
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id")
     private long id;
+
     @Column(name = "name")
     private String name;
+
     @ManyToOne(targetEntity = Site.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "id_site")
     private Site site;
