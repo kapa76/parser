@@ -3,6 +3,7 @@ package org.parser.persistence.model;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.sql.Date;
+import java.util.List;
 import java.util.Set;
 
 @Entity(name = "resume")
@@ -102,7 +103,6 @@ public class Resume implements Serializable {
     private String experienceMonthCount;
 
     /*@OneToMany(mappedBy = "professional", fetch = FetchType.LAZY)
-      private Set<Properties> languages;
 
     languages: [1]
     0:  [2]
@@ -136,9 +136,9 @@ public class Resume implements Serializable {
     title: "Центральный округ"
     }-*/
     @OneToMany(mappedBy = "resume", fetch = FetchType.LAZY)
-    private Set<PreviosWorkHistory> previosWorkHistory;
+    private List<PreviosWorkHistory> previosWorkHistory;
     @OneToMany(mappedBy = "resume", fetch = FetchType.LAZY)
-    private Set<EducationHistory> educationHistories;
+    private List<EducationHistory> educationHistories;
     @Column(name = "resume_url")
     private String resumeUrl;
     @ManyToOne(targetEntity = Gender.class, fetch = FetchType.LAZY)

@@ -1,7 +1,12 @@
 package org.parser.persistence.model;
 
+
+
+import org.hibernate.annotations.GenericGenerator;
+
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.List;
 import java.util.Set;
 
 @Entity(name = "professional_v")
@@ -11,20 +16,19 @@ public class ProfessionalV implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private long id;
 
-    @OneToMany(mappedBy = "professionalV", fetch = FetchType.LAZY)
-    private Set<ProfessionalDetailV> professionalDetailV;
+    @OneToMany(mappedBy = "professionalV", fetch = FetchType.LAZY )
+    private List<ProfessionalDetailV> professionalDetailV;
 
     @ManyToOne(targetEntity = Vacancy.class, fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_vacancy")
+    @JoinColumn(name = "id_vacancy", nullable = true)
     private Vacancy vacancylV;
 
-    @ManyToOne(targetEntity = Professional.class, fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_professional")
-    private Professional professional;
+    @Column(name = "name")
+    private String name;
 
     public ProfessionalV() {
         super();
@@ -32,7 +36,7 @@ public class ProfessionalV implements Serializable {
 
     public ProfessionalV(Professional p) {
         super();
-        this.professional = p;
+        this.name = p.getProfessionalName();
     }
 
     public long getId() {
@@ -43,11 +47,11 @@ public class ProfessionalV implements Serializable {
         this.id = id;
     }
 
-    public Set<ProfessionalDetailV> getProfessionalDetailV() {
+    public List<ProfessionalDetailV> getProfessionalDetailV() {
         return professionalDetailV;
     }
 
-    public void setProfessionalDetailV(Set<ProfessionalDetailV> professionalDetailV) {
+    public void setProfessionalDetailV(List<ProfessionalDetailV> professionalDetailV) {
         this.professionalDetailV = professionalDetailV;
     }
 
@@ -59,11 +63,11 @@ public class ProfessionalV implements Serializable {
         this.vacancylV = vacancylV;
     }
 
-    public Professional getProfessional() {
-        return professional;
+    public String getName() {
+        return name;
     }
 
-    public void setProfessional(Professional professional) {
-        this.professional = professional;
+    public void setName(String name) {
+        this.name = name;
     }
 }

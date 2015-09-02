@@ -17,7 +17,7 @@ public class ProfessionalRepository extends AbstractRepo {
 
 
     public Professional findOne(String name) {
-        return null;
+        return (Professional) sessionFactory.getCurrentSession().createQuery("from professional p where p.professionalName = :name").setParameter("name", name).uniqueResult();
     }
 
 

@@ -17,7 +17,8 @@ public class ProfessionalDetailRepository extends AbstractRepo {
 
 
     public ProfessionalDetail findOne(String name) {
-        return null;
+        return (ProfessionalDetail) sessionFactory.getCurrentSession().createQuery("from professionaldetail p where p.professionalDetailName = :name").setParameter("name", name).uniqueResult();
+
     }
 
 
@@ -46,6 +47,12 @@ public class ProfessionalDetailRepository extends AbstractRepo {
 
 
     public void deleteById(long entityId) {
+
+    }
+
+    public ProfessionalDetail findOne(String pdValue, Long pv) {
+        return (ProfessionalDetail) sessionFactory.getCurrentSession().createQuery("from professionaldetail p where p.professionalDetailName = :name and p.professional.id = :id").setParameter("name", pdValue).
+                setParameter("id", pv).uniqueResult();
 
     }
 }

@@ -4,9 +4,11 @@ package org.parser.persistence.model;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.sql.Date;
+import java.util.List;
 import java.util.Set;
 
-@Entity
+@Entity (name="vacancy")
+@Table
 public class Vacancy implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -14,68 +16,88 @@ public class Vacancy implements Serializable {
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id")
     private long id;
+
     @Column(name = "id_client")
     private Long id_client;
+
     @Column(name = "date_published")
     private Long datePublished;
+
     @Column(name = "payment")
     private Double payment;
-    @Column(name = "work")
+
+    @Column(name = "work", length = 1024)
     private String work;
-    @Column(name = "candidat")
+
+    @Column(name = "candidat", length = 1024)
     private String candidat;
+
     @ManyToOne(targetEntity = Currency.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "id_currency")
     private Currency currency;
-    @Column(name = "compensation")
+
+    @Column(name = "compensation", length = 4096)
     private String compensation;
     /**/
     @Column(name = "address")
     private String address;
+
     @Column(name = "date_pub_to")
     private long date_pub_to;
 
-    //    @Column(name = "profession")
-//    private String profession;
     @Column(name = "payment_from")
     private Double payment_from;
+
     @Column(name = "internal_id")
     private long internal_id;
     @ManyToOne(targetEntity = Moveable.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "id_moveable")
     private Moveable moveable;
+
     @Column(name = "agreement")
     private String agreement;
+
     @Column(name = "anonymous")
     private String anonymous;
+
     @Column(name = "is_archive")
     private boolean is_archive;
+
     @Column(name = "is_storage")
     private boolean is_storage;
+
     @ManyToOne(targetEntity = TypeOfWork.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "id_type_of_work")
     private TypeOfWork type_of_work;
+
     @ManyToOne(targetEntity = PlaceWork.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "id_place_of_work")
     private PlaceWork placeOfWork;
+
     @ManyToOne(targetEntity = Experience.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "id_experience")
     private Experience experience;
+
     @ManyToOne(targetEntity = Education.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "id_education")
     private Education education;
+
     @ManyToOne(targetEntity = MaritalStatus.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "id_marital_status")
     private MaritalStatus maritalStatus;
+
     @ManyToOne(targetEntity = Children.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "id_children")
     private Children children;
+
     @ManyToOne(targetEntity = Language.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "id_languages")
     private Language languages;
+
     @ManyToOne(targetEntity = Agency.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "id_agency")
     private Agency agency;
+
     @Column(name = "company_name")
     private String companyName;
 
@@ -97,7 +119,7 @@ public class Vacancy implements Serializable {
     @Column(name = "profession")
     private String profession;
 
-    @Column(name = "company_descr")
+    @Column(name = "company_descr", length = 8000)
     private String companyDescr;   //firm_activity
 
     @Column(name = "age_from")
@@ -114,7 +136,7 @@ public class Vacancy implements Serializable {
     private String companyUrl;
 
     @OneToMany(mappedBy = "vacancylV", fetch = FetchType.LAZY)
-    private Set<ProfessionalV> professional;
+    private List<ProfessionalV> professional;
 
     @ManyToOne(targetEntity = City.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "id_city")

@@ -39,7 +39,7 @@ public class ControllerService {
         return "vopa";
     }
 
-    @RequestMapping(value = "/init", method = RequestMethod.POST)
+    @RequestMapping(value = "/init", method = RequestMethod.GET)
     @ResponseStatus(value = HttpStatus.OK)
     public void init() {
         logger.debug("start or update initial DB by all properties");
@@ -49,7 +49,7 @@ public class ControllerService {
         serviceLI.init();
     }
 
-    @RequestMapping(value = "/initsystem", method = RequestMethod.POST)
+    @RequestMapping(value = "/initsystem", method = RequestMethod.GET)
     @ResponseStatus(value = HttpStatus.OK)
     public void initsystem(@RequestParam(value = "system_name") String name) {
         logger.debug("start or update initial DB by all properties");
@@ -91,7 +91,7 @@ public class ControllerService {
 
     }
 
-    @RequestMapping(value = "/startResume", method = RequestMethod.POST)
+    @RequestMapping(value = "/startResume", method = RequestMethod.GET)
     @ResponseStatus(value = HttpStatus.OK)
     public void startResume(@RequestParam(value = "system_name") String name) throws IOException {
         logger.debug("start vacancy loading: " + name);

@@ -36,7 +36,12 @@ public class VacancyRepository extends AbstractRepo {
 
 
     public Vacancy update(Vacancy entity) {
-        return null;
+        Session session = sessionFactory.openSession();
+        Transaction tx = session.beginTransaction();
+        session.save(entity);
+        if (this.isCommit()) tx.commit();
+        session.close();
+        return entity;
     }
 
 
@@ -47,5 +52,12 @@ public class VacancyRepository extends AbstractRepo {
 
     public void deleteById(long entityId) {
 
+    }
+
+    public boolean exist(Long id_client, long internal_id) {
+        Vacancy v = (Vacancy) sessionFactory.getCurrentSession().createQuery("from vacancy p where p.id_client = :id_client and p.internal_id = :internal_id ").setParameter("internal_id", internal_id).setParameter("id_client", id_client).uniqueResult();
+        if( v != null )
+            return true;
+        else return false;
     }
 }

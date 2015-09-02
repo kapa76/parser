@@ -3,7 +3,7 @@ package org.parser.persistence.model;
 import javax.persistence.*;
 import java.io.Serializable;
 
-@Entity
+@Entity  (name="professionaldetail")
 @Table
 public class ProfessionalDetail implements Serializable {
 

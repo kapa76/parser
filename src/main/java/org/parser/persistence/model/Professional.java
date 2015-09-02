@@ -2,9 +2,11 @@ package org.parser.persistence.model;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.List;
 import java.util.Set;
 
-@Entity
+@Entity(name="professional")
+@Table
 public class Professional implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -21,7 +23,7 @@ public class Professional implements Serializable {
     private Site site;
 
     @OneToMany(mappedBy = "professional", fetch = FetchType.LAZY)
-    private Set<ProfessionalDetail> professionalDetail;
+    private List<ProfessionalDetail> professionalDetail;
 
     public Professional() {
         super();
@@ -58,11 +60,11 @@ public class Professional implements Serializable {
         this.professionalName = professionalName;
     }
 
-    public Set<ProfessionalDetail> getProfessionalDetail() {
+    public List<ProfessionalDetail> getProfessionalDetail() {
         return professionalDetail;
     }
 
-    public void setProfessionalDetail(Set<ProfessionalDetail> professionalDetail) {
+    public void setProfessionalDetail(List<ProfessionalDetail> professionalDetail) {
         this.professionalDetail = professionalDetail;
     }
 }

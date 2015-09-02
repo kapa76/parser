@@ -11,6 +11,8 @@ public class ProfessionalVRepository extends AbstractRepo {
     public void create(ProfessionalV entity) {
         Session session = sessionFactory.openSession();
         Transaction tx = session.beginTransaction();
+//        Long id = (Long) session.createSQLQuery("select max(id) from professional_v").uniqueResult();
+//        id = id + 1;
         session.save(entity);
         tx.commit();
         session.close();

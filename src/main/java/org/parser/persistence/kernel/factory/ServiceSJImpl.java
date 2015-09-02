@@ -171,6 +171,25 @@ public class ServiceSJImpl implements ServiceSJ {
     @Override
     public void init() {
 
+        /*
+        ProfessionalV pv = null;
+        Professional p = professionalService.findOne("Банки, инвестиции, лизинг");
+
+        pv = new ProfessionalV(p);
+        professionalVRepository.create(pv);
+
+        List<ProfessionalDetailV> setPdv = new ArrayList<>();
+
+        ProfessionalDetail pd = professionalDetailService.findOne("asdf");
+        ProfessionalDetailV pdv = new ProfessionalDetailV(pd, pv);
+        professionalDetailVRepository.create(pdv);
+        setPdv.add(pdv);
+
+
+        pv.setProfessionalDetailV(setPdv);
+        professionalVRepository.update(pv);                */
+
+
         loadReferencesSJ(SJ_LOAD_PROPERTIES, SiteEnum.superjob);
         loadProfessionSJ(SJ_LOAD_PROFESSION, SiteEnum.superjob);
 
@@ -200,7 +219,7 @@ public class ServiceSJImpl implements ServiceSJ {
 
                     JsonArray profDetail = array.get(i).getAsJsonObject().get("positions").getAsJsonArray();
                     int detailSize = profDetail.size();
-                    Set<ProfessionalDetail> setDetail = new HashSet<ProfessionalDetail>();
+                    List<ProfessionalDetail> setDetail = new ArrayList<ProfessionalDetail>();
                     for (int j = 0; j < detailSize; j++) {
                         String detail = profDetail.get(j).getAsJsonObject().get("title_rus").getAsString();
                         ProfessionalDetail pd = new ProfessionalDetail(professional, detail);
@@ -328,21 +347,21 @@ public class ServiceSJImpl implements ServiceSJ {
                     int size = t.get("catalogues").getAsJsonArray().get(0).getAsJsonObject().get("positions").getAsJsonArray().size();
 
                     Professional p = professionalService.findOne(pValue);
-
                     pv = new ProfessionalV(p);
                     professionalVRepository.create(pv);
 
-                    Set<ProfessionalDetailV> setPdv = new HashSet<>();
+                    List<ProfessionalDetailV> setPdv = new ArrayList<>();
                     for (int i = 0; i < size; i++) {
                         String pdValue = t.get("catalogues").getAsJsonArray().get(0).getAsJsonObject().get("positions").getAsJsonArray().get(i).getAsJsonObject().get("title").getAsString().replaceAll("\"", "");
-
-                        ProfessionalDetail pd = professionalDetailService.findOne(pdValue);
+                        ProfessionalDetail pd = professionalDetailService.findOne(pdValue, p.getId());
                         ProfessionalDetailV pdv = new ProfessionalDetailV(pd, pv);
                         professionalDetailVRepository.create(pdv);
                         setPdv.add(pdv);
                     }
                     pv.setProfessionalDetailV(setPdv);
                     professionalVRepository.update(pv);
+
+                    //professionalVRepository.update(pv);
                 }
             }
             if (t.get("agency").isJsonObject()) {
@@ -351,7 +370,11 @@ public class ServiceSJImpl implements ServiceSJ {
             }
             if (t.get("town").isJsonObject()) {
                 String val = t.get("town").getAsJsonObject().get("title").getAsString();
-                v.setCity(cityService.findOne(val));
+                City city = cityService.findOne(val);
+                if (city == null) {
+                    cityService.create(new City(val));
+                }
+                v.setCity(city);
             }
             v.setAgeFrom(t.get("age_from").getAsInt());
             v.setAgeTo(t.get("age_to").getAsInt());
@@ -364,23 +387,139 @@ public class ServiceSJImpl implements ServiceSJ {
             v.setCompanyUrl(CommonUtils.isNullNull(t.get("link")));
             v.setCompanyName(CommonUtils.isNullNull(t.get("firm_name")));
             try {
-                vacancyService.create(v);
-                pv.setVacancylV(v);
+                if (!vacancyService.exist(v.getId_client(), v.getInternal_id())) {
+                    vacancyService.create(v);
+                    pv.setVacancylV(v);
+                    //professionalVRepository.update(pv);
 
-                professionalVRepository.update(pv);
+                    logger.debug("Save vacancy: " + v.getId_client());
+                }
+            } catch (DataIntegrityViolationException exception) {
+                //save to history error
 
-                logger.debug("Save vacancy: " + v.getId_client());
+                String mesg = exception.getMessage();
+                                      //   v.getCandidat().length()
+            }
+        }
+    }
+
+    private void saveResume(List<JsonObject> resumeObj) {
+       /* for (JsonObject t : resumeObj) {
+            Resume v = new Resume();
+
+            v.setId_client(t.get("id_client").getAsLong());
+            v.setPayment(t.get("payment_to").getAsDouble());
+            v.setDatePublished(t.get("date_published").getAsLong());
+            v.setWork(CommonUtils.isNullNull(t.get("work")));
+            v.setCandidat(CommonUtils.isNullNull(t.get("candidat")));
+            v.setCurrency(currencyService.findOne(CommonUtils.isNullNull(t.get("currency"))));
+            v.setCompensation(CommonUtils.isNullNull(t.get("compensation")));
+            v.setProfession(t.get("profession").getAsString());
+            v.setAddress(CommonUtils.isNullNull(t.get("address")));
+            v.setDate_pub_to(t.get("date_pub_to").getAsLong());
+            v.setPayment_from(t.get("payment_from").getAsDouble());
+            v.setInternal_id(t.get("id").getAsLong());
+            if (t.get("moveable").isJsonObject()) {
+                String val = t.get("place_of_work").getAsJsonObject().get("title").getAsString();
+                v.setMoveable(moveableService.findOne(val));
+            }
+            v.setAgreement(CommonUtils.isNullNull(t.get("agreement")));
+            v.setAnonymous(CommonUtils.isNullNull(t.get("anonymous")));
+            v.setIs_archive((t.get("is_archive").getAsBoolean()));
+            v.setIs_storage((t.get("is_storage").getAsBoolean()));
+
+            if (t.get("type_of_work").isJsonObject()) {
+                String val = t.get("type_of_work").getAsJsonObject().get("title").getAsString();
+                v.setType_of_work(typeOfWorkService.findOne(val));
+            }
+            if (t.get("place_of_work").isJsonObject()) {
+                String val = t.get("place_of_work").getAsJsonObject().get("title").getAsString();
+                v.setPlaceOfWork(placeWorkService.findOne(val));
+            }
+            if (t.get("education").isJsonObject()) {
+                String val = t.get("education").getAsJsonObject().get("title").getAsString();
+                v.setEducation(educationService.findOne(val));
+            }
+            if (t.get("experience").isJsonObject()) {
+                String val = t.get("experience").getAsJsonObject().get("title").getAsString();
+                v.setExperience(experienceService.findOne(val));
+            }
+            if (t.get("maritalstatus").isJsonObject()) {
+                String val = t.get("maritalstatus").getAsJsonObject().get("title").getAsString();
+                v.setMaritalStatus(maritalStatusService.findOne(val));
+            }
+            if (t.get("children").isJsonObject()) {
+                String val = t.get("children").getAsJsonObject().get("title").getAsString();
+                v.setChildren(childrenService.findOne(val));
+            }
+            if (t.get("languages").isJsonObject()) {
+                String val = t.get("languages").getAsJsonObject().get("title").getAsString();
+                v.setLanguages(languageService.findOne(val));
+            }
+            ProfessionalV pv = null;
+            if (t.get("catalogues").isJsonArray()) {
+                if (t.get("catalogues").getAsJsonArray().size() > 0) {
+                    String pValue = t.get("catalogues").getAsJsonArray().get(0).getAsJsonObject().get("title").getAsString().replaceAll("\"", "");
+                    int size = t.get("catalogues").getAsJsonArray().get(0).getAsJsonObject().get("positions").getAsJsonArray().size();
+
+                    Professional p = professionalService.findOne(pValue);
+
+                    pv = new ProfessionalV(p);
+
+                    Set<ProfessionalDetailV> setPdv = new HashSet<>();
+                    for (int i = 0; i < size; i++) {
+                        String pdValue = t.get("catalogues").getAsJsonArray().get(0).getAsJsonObject().get("positions").getAsJsonArray().get(i).getAsJsonObject().get("title").getAsString().replaceAll("\"", "");
+
+                        ProfessionalDetail pd = professionalDetailService.findOne(pdValue);
+                        ProfessionalDetailV pdv = new ProfessionalDetailV(pd, pv);
+                        professionalDetailVRepository.create(pdv);
+                        setPdv.add(pdv);
+
+
+                    }
+                    pv.setProfessionalDetailV(setPdv);
+                    professionalVRepository.create(pv);
+
+                    //professionalVRepository.update(pv);
+                }
+            }
+            if (t.get("agency").isJsonObject()) {
+                String val = t.get("agency").getAsJsonObject().get("title").getAsString();
+                v.setAgency(agencyService.findOne(val));
+            }
+            if (t.get("town").isJsonObject()) {
+                String val = t.get("town").getAsJsonObject().get("title").getAsString();
+                City city = cityService.findOne(val);
+                if (city == null) {
+                    cityService.create(city);
+                }
+                v.setCity(city);
+            }
+            v.setAgeFrom(t.get("age_from").getAsInt());
+            v.setAgeTo(t.get("age_to").getAsInt());
+
+            if (t.get("gender").isJsonObject()) {
+                String val = t.get("gender").getAsJsonObject().get("title").getAsString();
+                v.setGender(genderService.findOne(val));
+            }
+            v.setCompanyDescr(CommonUtils.isNullNull(t.get("firm_activity")));
+            v.setCompanyUrl(CommonUtils.isNullNull(t.get("link")));
+            v.setCompanyName(CommonUtils.isNullNull(t.get("firm_name")));
+            try {
+                if (!resumeService.exist(v.getId_client(), v.getInternal_id())) {
+                    resumeService.create(v);
+                    pv.setVacancylV(v);
+                    professionalVRepository.update(pv);
+
+                    logger.debug("Save vacancy: " + v.getId_client());
+                }
             } catch (DataIntegrityViolationException exception) {
                 //save to history error
 
                 String mesg = exception.getMessage();
 
             }
-        }
-    }
-
-    private void saveResume(List<JsonObject> resumeObj) {
-
+        }   */
     }
 
     @Override
