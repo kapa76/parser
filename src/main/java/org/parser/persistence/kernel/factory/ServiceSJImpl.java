@@ -247,7 +247,7 @@ public class ServiceSJImpl implements ServiceSJ {
 
         Integer period = 0;//за все время
         Integer count = 100; // - на странице
-        Integer page = 0; // номер страницы
+        Integer page = 4; // номер страницы
         //если more = true -> есть что качать.
         boolean more = true;
 
@@ -374,7 +374,7 @@ public class ServiceSJImpl implements ServiceSJ {
                 if (city == null) {
                     try {
                         cityService.create(new City(val));
-                    } catch(Exception e){
+                    } catch (Exception e) {
                         logger.debug("Exception add city: " + e.getMessage());
                     }
                 }
@@ -402,15 +402,79 @@ public class ServiceSJImpl implements ServiceSJ {
                 //save to history error
 
                 String mesg = exception.getMessage();
-                                      //   v.getWork().length()
+                //   v.getWork().length()
             }
         }
     }
 
     private void saveResume(List<JsonObject> resumeObj) {
-       /* for (JsonObject t : resumeObj) {
+        for (JsonObject t : resumeObj) {
             Resume v = new Resume();
+          /*
+            //////
+            v.setId_internal(t.get("id").getAsLong());
+            v.setLast_profession(t.get("last_profession").getAsString().replaceAll("\"", ""));
+            v.setPayment(t.get("payment").getAsDouble());
 
+            String val = t.get("currency").getAsString().replaceAll("\"", "");
+            v.setCurrency(currencyService.findOne(val));
+
+
+            v.setBirthday();
+            v.setBirthmonth();
+            v.setBirthyear();
+            v.setAge();
+            v.setAddress();
+
+            v.setCitizenship();
+            v.setPublishedResume();
+            v.setPublishedResume();
+            v.setMoveable();
+
+
+            v.setAgreement();
+
+
+            v.setType_of_work();
+
+            v.setPlaceOfWork();
+
+            v.setEducation();
+
+            v.setBusinessTrip();
+
+            v.setMaritalStatus();
+
+            v.setProfessional();
+
+            v.setTown();
+            v.setRegion();
+
+            v.setExperience_text();
+            v.setExperience_month_count();
+
+            v.setPreviosWorkHistories();
+
+            v.setBaseEducationsHistory();
+
+            v.setGender();
+
+            v.setAchievements();
+
+            v.setAdditionalInfo();
+
+            v.setPublished();
+
+            v.setDateLastModified();
+
+            v.setIsArchive();
+
+            v.setIdUser();
+
+            v.setProfession();
+
+
+            /////
             v.setId_client(t.get("id_client").getAsLong());
             v.setPayment(t.get("payment_to").getAsDouble());
             v.setDatePublished(t.get("date_published").getAsLong());
@@ -522,8 +586,8 @@ public class ServiceSJImpl implements ServiceSJ {
 
                 String mesg = exception.getMessage();
 
-            }
-        }   */
+            }*/
+        }
     }
 
     @Override

@@ -79,6 +79,11 @@
                 <value>org.parser.persistence.model.TypeOfWork</value>
                 <value>org.parser.persistence.model.Vacancy</value>
                 <value>org.parser.persistence.model.WorkType</value>
+
+                <value>org.parser.persistence.model.ProfessionalR</value>
+                <value>org.parser.persistence.model.ProfessionalDetailR</value>
+                <value>org.parser.persistence.model.BaseEducation</value>
+
             </list>
         </property>
 
@@ -90,6 +95,7 @@
                 <prop key="hibernate.generate_statistics">true</prop>
                 <prop key="hibernate.hbm2ddl.auto">update</prop>
                 <prop key="hibernate.jdbc.use_get_generated_keys">true</prop>
+                <prop key="hibernate.connection.autocommit">true</prop>
 
             </props>
         </property>

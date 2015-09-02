@@ -49,7 +49,6 @@ public class BaseEducation implements Serializable {
         super();
     }
 
-
     public long getId() {
         return id;
     }

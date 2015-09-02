@@ -30,7 +30,7 @@ public class VacancyRepository extends AbstractRepo {
         Session session = sessionFactory.openSession();
         Transaction tx = session.beginTransaction();
         session.save(entity);
-        if (this.isCommit()) tx.commit();
+        tx.commit();
         session.close();
     }
 
@@ -39,7 +39,7 @@ public class VacancyRepository extends AbstractRepo {
         Session session = sessionFactory.openSession();
         Transaction tx = session.beginTransaction();
         session.save(entity);
-        if (this.isCommit()) tx.commit();
+        tx.commit();
         session.close();
         return entity;
     }
