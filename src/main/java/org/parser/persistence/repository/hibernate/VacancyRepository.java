@@ -55,15 +55,15 @@ public class VacancyRepository extends AbstractRepo {
     }
 
     public boolean findByInternal(Long id) {
-        Vacancy v = (Vacancy) sessionFactory.getCurrentSession().createQuery("from vacancy p where p.vacancy_internale_id = :id").setParameter("id", id).uniqueResult();
-        if (v != null)
+        Integer count = (Integer)  sessionFactory.getCurrentSession().createQuery("select count(*) from vacancy p where p.vacancy_internale_id = :id").setParameter("id", id).uniqueResult();
+        if (count > 0 )
             return true;
         else return false;
     }
 
-    public boolean findByLink(String url) {
-        Vacancy v = (Vacancy) sessionFactory.getCurrentSession().createQuery("from vacancy p where p.url = :link").setParameter("link", url).uniqueResult();
-        if (v != null)
+    public boolean findByLink(String url, int type) {
+        Integer count = (Integer) sessionFactory.getCurrentSession().createQuery("select count(*) from vacancy p where p.url = :link and p.systemId = :id").setParameter("link", url).setParameter("id", type).uniqueResult();
+        if (count > 0)
             return true;
         else return false;
     }

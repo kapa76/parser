@@ -1,6 +1,5 @@
 package org.parser.persistence.kernel.factory;
 
-import com.google.gson.JsonObject;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -13,6 +12,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.parser.persistence.kernel.ServiceSJ;
 import org.parser.persistence.model.History;
+import org.parser.persistence.model.PreviosWorkHistory;
 import org.parser.persistence.model.Resume;
 import org.parser.persistence.model.Vacancy;
 import org.parser.persistence.repository.hibernate.*;
@@ -22,7 +22,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -174,7 +177,9 @@ public class ServiceSJImpl implements ServiceSJ {
         System.out.println("Response Code : " + returnCode);  //200
         if (returnCode == 200) {
             String htmlPage = IOUtils.toString(response.getEntity().getContent(), "UTF-8");
-            start_vacancy_load(htmlPage);
+
+            start_vacancy_load(readFile("c:\\repository\\parser\\input_data\\superjob\\vacancy\\full_vacancy.html"));
+            //start_vacancy_load(htmlPage);
         }
     }
 
@@ -196,6 +201,7 @@ public class ServiceSJImpl implements ServiceSJ {
     public void start_vacancy_load(String htmlLoaded) throws IOException {
         //забираем по одной ссылке со страницы и каждую грузим.
 
+
         Document doc = Jsoup.parse(htmlLoaded);
         Elements elems = doc.select("div.VacancyListElement_content");
         int countOnPage = elems.size();
@@ -203,7 +209,9 @@ public class ServiceSJImpl implements ServiceSJ {
         while (iterator.hasNext()) {
             Element elem = iterator.next();
             String vacancyPageUrl = elem.select("h2.VacancyListElement_position").first().getElementsByAttribute("href").first().attr("href");
-            String contentPage = get_html_by_link(vacancyPageUrl);
+
+            String contentPage = readFile("c:\\repository\\parser\\input_data\\superjob\\vacancy\\once_vacacy.html");
+            //String contentPage = get_html_by_link(vacancyPageUrl);
 
             try {
                 parse_html_page(contentPage, vacancyPageUrl);
@@ -212,11 +220,11 @@ public class ServiceSJImpl implements ServiceSJ {
             }
         }
 
-        String next_link = get_next_link_from_page(doc);
+       /* String next_link = get_next_link_from_page(doc);
         if (next_link.length() > 0) {
             String html = get_html_by_link(next_link);
             start_vacancy_load(html);
-        }
+        } */
     }
 
     private void logHistory(String msg, String url, int systemtype, int type) {
@@ -289,189 +297,6 @@ public class ServiceSJImpl implements ServiceSJ {
     }
 
 
-    private void saveResume(List<JsonObject> resumeObj) {
-        for (JsonObject t : resumeObj) {
-            Resume v = new Resume();
-          /*
-            //////
-            v.setId_internal(t.get("id").getAsLong());
-            v.setLast_profession(t.get("last_profession").getAsString().replaceAll("\"", ""));
-            v.setPayment(t.get("payment").getAsDouble());
-
-            String val = t.get("currency").getAsString().replaceAll("\"", "");
-            v.setCurrency(currencyService.findOne(val));
-
-
-            v.setBirthday();
-            v.setBirthmonth();
-            v.setBirthyear();
-            v.setAge();
-            v.setAddress();
-
-            v.setCitizenship();
-            v.setPublishedResume();
-            v.setPublishedResume();
-            v.setMoveable();
-
-
-            v.setAgreement();
-
-
-            v.setType_of_work();
-
-            v.setPlaceOfWork();
-
-            v.setEducation();
-
-            v.setBusinessTrip();
-
-            v.setMaritalStatus();
-
-            v.setProfessional();
-
-            v.setTown();
-            v.setRegion();
-
-            v.setExperience_text();
-            v.setExperience_month_count();
-
-            v.setPreviosWorkHistories();
-
-            v.setBaseEducationsHistory();
-
-            v.setGender();
-
-            v.setAchievements();
-
-            v.setAdditionalInfo();
-
-            v.setPublished();
-
-            v.setDateLastModified();
-
-            v.setIsArchive();
-
-            v.setIdUser();
-
-            v.setProfession();
-
-
-            /////
-            v.setId_client(t.get("id_client").getAsLong());
-            v.setPayment(t.get("payment_to").getAsDouble());
-            v.setDatePublished(t.get("date_published").getAsLong());
-            v.setWork(CommonUtils.isNullNull(t.get("work")));
-            v.setCandidat(CommonUtils.isNullNull(t.get("candidat")));
-            v.setCurrency(currencyService.findOne(CommonUtils.isNullNull(t.get("currency"))));
-            v.setCompensation(CommonUtils.isNullNull(t.get("compensation")));
-            v.setProfession(t.get("profession").getAsString());
-            v.setAddress(CommonUtils.isNullNull(t.get("address")));
-            v.setDate_pub_to(t.get("date_pub_to").getAsLong());
-            v.setPayment_from(t.get("payment_from").getAsDouble());
-            v.setInternal_id(t.get("id").getAsLong());
-            if (t.get("moveable").isJsonObject()) {
-                String val = t.get("place_of_work").getAsJsonObject().get("title").getAsString();
-                v.setMoveable(moveableService.findOne(val));
-            }
-            v.setAgreement(CommonUtils.isNullNull(t.get("agreement")));
-            v.setAnonymous(CommonUtils.isNullNull(t.get("anonymous")));
-            v.setIs_archive((t.get("is_archive").getAsBoolean()));
-            v.setIs_storage((t.get("is_storage").getAsBoolean()));
-
-            if (t.get("type_of_work").isJsonObject()) {
-                String val = t.get("type_of_work").getAsJsonObject().get("title").getAsString();
-                v.setType_of_work(typeOfWorkService.findOne(val));
-            }
-            if (t.get("place_of_work").isJsonObject()) {
-                String val = t.get("place_of_work").getAsJsonObject().get("title").getAsString();
-                v.setPlaceOfWork(placeWorkService.findOne(val));
-            }
-            if (t.get("education").isJsonObject()) {
-                String val = t.get("education").getAsJsonObject().get("title").getAsString();
-                v.setEducation(educationService.findOne(val));
-            }
-            if (t.get("experience").isJsonObject()) {
-                String val = t.get("experience").getAsJsonObject().get("title").getAsString();
-                v.setExperience(experienceService.findOne(val));
-            }
-            if (t.get("maritalstatus").isJsonObject()) {
-                String val = t.get("maritalstatus").getAsJsonObject().get("title").getAsString();
-                v.setMaritalStatus(maritalStatusService.findOne(val));
-            }
-            if (t.get("children").isJsonObject()) {
-                String val = t.get("children").getAsJsonObject().get("title").getAsString();
-                v.setChildren(childrenService.findOne(val));
-            }
-            if (t.get("languages").isJsonObject()) {
-                String val = t.get("languages").getAsJsonObject().get("title").getAsString();
-                v.setLanguages(languageService.findOne(val));
-            }
-            ProfessionalV pv = null;
-            if (t.get("catalogues").isJsonArray()) {
-                if (t.get("catalogues").getAsJsonArray().size() > 0) {
-                    String pValue = t.get("catalogues").getAsJsonArray().get(0).getAsJsonObject().get("title").getAsString().replaceAll("\"", "");
-                    int size = t.get("catalogues").getAsJsonArray().get(0).getAsJsonObject().get("positions").getAsJsonArray().size();
-
-                    Professional p = professionalService.findOne(pValue);
-
-                    pv = new ProfessionalV(p);
-
-                    Set<ProfessionalDetailV> setPdv = new HashSet<>();
-                    for (int i = 0; i < size; i++) {
-                        String pdValue = t.get("catalogues").getAsJsonArray().get(0).getAsJsonObject().get("positions").getAsJsonArray().get(i).getAsJsonObject().get("title").getAsString().replaceAll("\"", "");
-
-                        ProfessionalDetail pd = professionalDetailService.findOne(pdValue);
-                        ProfessionalDetailV pdv = new ProfessionalDetailV(pd, pv);
-                        professionalDetailVRepository.create(pdv);
-                        setPdv.add(pdv);
-
-
-                    }
-                    pv.setProfessionalDetailV(setPdv);
-                    professionalVRepository.create(pv);
-
-                    //professionalVRepository.update(pv);
-                }
-            }
-            if (t.get("agency").isJsonObject()) {
-                String val = t.get("agency").getAsJsonObject().get("title").getAsString();
-                v.setAgency(agencyService.findOne(val));
-            }
-            if (t.get("town").isJsonObject()) {
-                String val = t.get("town").getAsJsonObject().get("title").getAsString();
-                City city = cityService.findOne(val);
-                if (city == null) {
-                    cityService.create(city);
-                }
-                v.setCity(city);
-            }
-            v.setAgeFrom(t.get("age_from").getAsInt());
-            v.setAgeTo(t.get("age_to").getAsInt());
-
-            if (t.get("gender").isJsonObject()) {
-                String val = t.get("gender").getAsJsonObject().get("title").getAsString();
-                v.setGender(genderService.findOne(val));
-            }
-            v.setCompanyDescr(CommonUtils.isNullNull(t.get("firm_activity")));
-            v.setCompanyUrl(CommonUtils.isNullNull(t.get("link")));
-            v.setCompanyName(CommonUtils.isNullNull(t.get("firm_name")));
-            try {
-                if (!resumeService.exist(v.getId_client(), v.getInternal_id())) {
-                    resumeService.create(v);
-                    pv.setVacancylV(v);
-                    professionalVRepository.update(pv);
-
-                    logger.debug("Save vacancy: " + v.getId_client());
-                }
-            } catch (DataIntegrityViolationException exception) {
-                //save to history error
-
-                String mesg = exception.getMessage();
-
-            }*/
-        }
-    }
-
     @Override
     public void startResume() throws IOException {
         HttpClient client = HttpClientBuilder.create().build();
@@ -482,7 +307,8 @@ public class ServiceSJImpl implements ServiceSJ {
         System.out.println("Response Code : " + returnCode);  //200
         if (returnCode == 200) {
             String htmlPage = IOUtils.toString(response.getEntity().getContent(), "UTF-8");
-            start_resume_load(htmlPage);
+            start_resume_load(readFile("c:\\repository\\parser\\input_data\\superjob\\resume\\full_resume.html"));
+//            start_resume_load(htmlPage);
         }
     }
 
@@ -495,8 +321,8 @@ public class ServiceSJImpl implements ServiceSJ {
         while (iterator.hasNext()) {
             Element elem = iterator.next();
             String vacancyPageUrl = elem.select("h2.ResumeListElement_post").first().getElementsByAttribute("href").first().attr("href");
-            //String vacancyPageUrl = elem.select("h2.VacancyListElement_position").first().getElementsByAttribute("href").first().attr("href");
-            String contentPage = get_html_by_link(vacancyPageUrl);
+            String contentPage = readFile("c:\\repository\\parser\\input_data\\superjob\\resume\\once_resume.html");
+//            String contentPage = get_html_by_link(vacancyPageUrl);
             parse_resume_html_page(contentPage, vacancyPageUrl);
         }
 
@@ -510,8 +336,8 @@ public class ServiceSJImpl implements ServiceSJ {
     private void parse_resume_html_page(String contentPage, String vacancyPageUrl) {
         // разбор целиком вакансии
         Document doc = Jsoup.parse(contentPage);
-        String vacancy_internal_number = doc.select("div.resume_num_info").first().text();
-        String[] splt = vacancy_internal_number.split(" ");
+        String resume_internal_number = doc.select("div.resume_num_info").first().text();
+        String[] splt = resume_internal_number.split(" ");
         Long resume_internale_id = Long.parseLong(splt[1]);
 
         String resume_name = doc.select("h1.sj_typo_h1").text();
@@ -519,34 +345,64 @@ public class ServiceSJImpl implements ServiceSJ {
         Object obj[] = ee.toArray();
 
         String payment = ((Element) obj[0]).text();
-        String work_type = ((Element) obj[1]).text();
-        String place = ((Element) obj[2]).text();
-        //((Element) obj[1]).text()
-        String bdays = doc.select("div.ResumeMainHR_content_row").first().text();
+        String work_type = "";
+        if (obj.length > 1)
+            work_type = ((Element) obj[1]).text();
+        String place = "";
+        if (obj.length > 2)
+            place = ((Element) obj[2]).text();
 
+        String bdays = doc.select("div.ResumeMainHR_content_row").first().text();
 
         ////опыт работы
         Elements historys = doc.select("div.ResumeDetailsHR_row");
         Iterator<Element> iterator = historys.iterator();
+        List<PreviosWorkHistory> ll = new ArrayList<>();
         while (iterator.hasNext()) {
             Element elem = iterator.next();
+            PreviosWorkHistory history = new PreviosWorkHistory();
+
 
             String fromTo = elem.select("div.ResumeDetailsHR_leftblock").first().text();
-
-            String place1 = elem.select("div.work_profesion").first().select("h2").first().text();
+            String place_descr = elem.select("div.work_profesion").first().select("h2").first().text();
 
             String companyName = elem.select("div.ResumeDetailsHR_line_rightblock").first().select("p").first().text();
             String description = elem.select("div.work_profesion").select("h2").text();
+
+            history.setCompanyName(companyName);
+            history.setDescription(description.getBytes());
+            history.setFrom_to(fromTo);
+            history.setPlace_descr(place_descr.getBytes());
+
+            previosWorkHistoryService.create(history);
+            ll.add(history);
         }
         ///////////////
         String hasNowledge = doc.select("div.ResumeDetailsHR_14font").first().text();
         String education = doc.select("div.ResumeDetailsHR_line_rightblock").first().text();
+        Resume resume = new Resume();
+
+        resume.setPrevios(ll);
 
 
+        resumeService.create(resume);
 //        if (!vacancyService.findByInternal(vacancy.getVacancy_internale_id())) {
 //            vacancyService.create(vacancy);
 //        }
     }
 
+    private String readFile(String file) throws IOException {
+        BufferedReader reader = new BufferedReader(new FileReader(file));
+        String line = null;
+        StringBuilder stringBuilder = new StringBuilder();
+        //String         ls = System.getProperty("line.separator");
+
+        while ((line = reader.readLine()) != null) {
+            stringBuilder.append(line);
+            //stringBuilder.append( ls );
+        }
+
+        return stringBuilder.toString();
+    }
 
 }

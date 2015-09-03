@@ -14,34 +14,18 @@ public class PreviosWorkHistory implements Serializable {
     @Column(name = "id")
     private long id;
 
-    @Column(name = "name")
-    private String name;
+    @Column(name = "from_to")
+    private String from_to;
 
-    @ManyToOne(targetEntity = City.class, fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_city")
-    private City city;
+    @Column(name = "place_descr")
+    private byte[] place_descr;
 
-    @Column(name = "profession")
-    private String profession;
+    @Column(name = "companyName")
+    private String companyName;
 
-    @Column(name = "work")
-    private String work;
+    @Column(name = "description")
+    private byte[] description;
 
-    @ManyToOne(targetEntity = WorkType.class, fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_worktype")
-    private WorkType type;
-
-    @Column(name = "monthbeg")
-    private Integer monthbeg;
-
-    @Column(name = "monthend")
-    private Integer monthend;
-
-    @Column(name = "yearbeg")
-    private Integer yearbeg;
-
-    @Column(name = "yearend")
-    private Integer yearend;
 
     @ManyToOne(targetEntity = Resume.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "id_resume")
@@ -49,11 +33,6 @@ public class PreviosWorkHistory implements Serializable {
 
     public PreviosWorkHistory() {
         super();
-    }
-
-    public PreviosWorkHistory(final String name) {
-        super();
-        this.name = name;
     }
 
 
@@ -65,76 +44,36 @@ public class PreviosWorkHistory implements Serializable {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
+    public String getFrom_to() {
+        return from_to;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setFrom_to(String from_to) {
+        this.from_to = from_to;
     }
 
-    public City getCity() {
-        return city;
+    public byte[] getPlace_descr() {
+        return place_descr;
     }
 
-    public void setCity(City city) {
-        this.city = city;
+    public void setPlace_descr(byte[] place_descr) {
+        this.place_descr = place_descr;
     }
 
-    public String getProfession() {
-        return profession;
+    public String getCompanyName() {
+        return companyName;
     }
 
-    public void setProfession(String profession) {
-        this.profession = profession;
+    public void setCompanyName(String companyName) {
+        this.companyName = companyName;
     }
 
-    public String getWork() {
-        return work;
+    public byte[] getDescription() {
+        return description;
     }
 
-    public void setWork(String work) {
-        this.work = work;
-    }
-
-    public WorkType getType() {
-        return type;
-    }
-
-    public void setType(WorkType type) {
-        this.type = type;
-    }
-
-    public Integer getMonthbeg() {
-        return monthbeg;
-    }
-
-    public void setMonthbeg(Integer monthbeg) {
-        this.monthbeg = monthbeg;
-    }
-
-    public Integer getMonthend() {
-        return monthend;
-    }
-
-    public void setMonthend(Integer monthend) {
-        this.monthend = monthend;
-    }
-
-    public Integer getYearbeg() {
-        return yearbeg;
-    }
-
-    public void setYearbeg(Integer yearbeg) {
-        this.yearbeg = yearbeg;
-    }
-
-    public Integer getYearend() {
-        return yearend;
-    }
-
-    public void setYearend(Integer yearend) {
-        this.yearend = yearend;
+    public void setDescription(byte[] description) {
+        this.description = description;
     }
 
     public Resume getResume() {

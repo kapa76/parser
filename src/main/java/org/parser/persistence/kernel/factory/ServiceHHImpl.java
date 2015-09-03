@@ -21,6 +21,8 @@ import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.Iterator;
 
@@ -56,6 +58,20 @@ public class ServiceHHImpl implements ServiceHH {
         return content;
     }
 
+    private String readFile( String file ) throws IOException {
+        BufferedReader reader = new BufferedReader( new FileReader(file));
+        String         line = null;
+        StringBuilder  stringBuilder = new StringBuilder();
+        //String         ls = System.getProperty("line.separator");
+
+        while( ( line = reader.readLine() ) != null ) {
+            stringBuilder.append( line );
+            //stringBuilder.append( ls );
+        }
+
+        return stringBuilder.toString();
+    }
+
     @Override
     public void startVacancy() throws IOException {
         HttpClient client = HttpClientBuilder.create().build();
@@ -66,7 +82,8 @@ public class ServiceHHImpl implements ServiceHH {
         System.out.println("Response Code : " + returnCode);  //200
         if (returnCode == 200) {
             String htmlPage = IOUtils.toString(response.getEntity().getContent(), "UTF-8");
-            start_vacancy_load(htmlPage);
+            start_vacancy_load(readFile("c:\\repository\\parser\\input_data\\hh\\vacancy\\full.html"));
+//            start_vacancy_load(htmlPage);
         }
     }
 
@@ -80,7 +97,8 @@ public class ServiceHHImpl implements ServiceHH {
         while (iterator.hasNext()) {
             Element elem = iterator.next();
             String vacancyPageUrl = elem.select("div.search-result-item__head").first().getElementsByAttribute("href").first().attr("href");
-            String contentPage = get_html_by_link(vacancyPageUrl);
+//            String contentPage = get_html_by_link(vacancyPageUrl);
+            String contentPage = readFile("c:\\repository\\parser\\input_data\\hh\\vacancy\\vacancy.html");
             try {
                 parse_html_page(contentPage, vacancyPageUrl);
             } catch (Exception e) {
@@ -88,11 +106,11 @@ public class ServiceHHImpl implements ServiceHH {
             }
         }
 
-        String next_link = get_next_link_from_page(doc);
-        if (next_link.length() > 0) {
-            String html = get_html_by_link(next_link);
-            start_vacancy_load(html);
-        }
+//        String next_link = get_next_link_from_page(doc);
+//        if (next_link.length() > 0) {
+//            String html = get_html_by_link(next_link);
+//            start_vacancy_load(html);
+//        }
     }
 
 
@@ -139,7 +157,7 @@ public class ServiceHHImpl implements ServiceHH {
         vacancy.setUrl(vacancyPageUrl);
 //        vacancy.setVacancy_internale_id(vacancy_internale_id);
 
-        if (!vacancyService.findByLink(vacancy.getUrl())) {
+        if (!vacancyService.findByLink(vacancy.getUrl(), 1)) {
             vacancyService.create(vacancy);
         }
     }
