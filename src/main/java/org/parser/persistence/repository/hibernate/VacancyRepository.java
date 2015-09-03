@@ -54,9 +54,16 @@ public class VacancyRepository extends AbstractRepo {
 
     }
 
-    public boolean exist(Long id_client, long internal_id) {
-        Vacancy v = (Vacancy) sessionFactory.getCurrentSession().createQuery("from vacancy p where p.id_client = :id_client and p.internal_id = :internal_id ").setParameter("internal_id", internal_id).setParameter("id_client", id_client).uniqueResult();
-        if( v != null )
+    public boolean findByInternal(Long id) {
+        Vacancy v = (Vacancy) sessionFactory.getCurrentSession().createQuery("from vacancy p where p.vacancy_internale_id = :id").setParameter("id", id).uniqueResult();
+        if (v != null)
+            return true;
+        else return false;
+    }
+
+    public boolean findByLink(String url) {
+        Vacancy v = (Vacancy) sessionFactory.getCurrentSession().createQuery("from vacancy p where p.url = :link").setParameter("link", url).uniqueResult();
+        if (v != null)
             return true;
         else return false;
     }

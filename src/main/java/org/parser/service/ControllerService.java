@@ -39,35 +39,6 @@ public class ControllerService {
         return "vopa";
     }
 
-    @RequestMapping(value = "/init", method = RequestMethod.GET)
-    @ResponseStatus(value = HttpStatus.OK)
-    public void init() {
-        logger.debug("start or update initial DB by all properties");
-        serviceHH.init();
-        serviceSJ.init();
-        serviceMK.init();
-        serviceLI.init();
-    }
-
-    @RequestMapping(value = "/initsystem", method = RequestMethod.GET)
-    @ResponseStatus(value = HttpStatus.OK)
-    public void initsystem(@RequestParam(value = "system_name") String name) {
-        logger.debug("start or update initial DB by all properties");
-        switch (name) {
-            case "hh":
-                serviceHH.init();
-                break;
-            case "JS":
-                serviceSJ.init();
-                break;
-            case "moykrug":
-                serviceMK.init();
-                break;
-            case "linkedIn":
-                serviceLI.init();
-                break;
-        }
-    }
 
     @RequestMapping(value = "/startVacancy", method = RequestMethod.GET)
     @ResponseStatus(value = HttpStatus.OK)

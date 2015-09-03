@@ -1,14 +1,9 @@
 package org.parser.persistence.model;
 
-
 import javax.persistence.*;
 import java.io.Serializable;
-import java.sql.Blob;
-import java.sql.Date;
-import java.util.List;
-import java.util.Set;
 
-@Entity (name="vacancy")
+@Entity(name = "vacancy")
 @Table
 public class Vacancy implements Serializable {
 
@@ -18,147 +13,50 @@ public class Vacancy implements Serializable {
     @Column(name = "id")
     private long id;
 
-    @Column(name = "id_client")
-    private Long id_client;
+    @Column(name = "vacancy_name")
+    private String vacancy_name;
 
-    @Column(name = "date_published")
-    private Long datePublished;
+    @Column(name = "salary")
+    private String Salary;
 
-    @Column(name = "payment")
-    private Double payment;
+    @Column(name = "experience")
+    private String Experience;
 
-    @Column(name = "work")
-    private byte[] work;
+    @Column(name = "need_make")
+    private byte[] need_make;
 
-    @Column(name = "candidat")
-    private  byte[] candidat;
+    @Column(name = "needs")
+    private byte[] needs;
 
-    @ManyToOne(targetEntity = Currency.class, fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_currency")
-    private Currency currency;
-
-    @Column(name = "compensation")
-    private  byte[] compensation;
-    /**/
-    @Column(name = "address")
-    private String address;
-
-    @Column(name = "date_pub_to")
-    private long date_pub_to;
-
-    @Column(name = "payment_from")
-    private Double payment_from;
-
-    @Column(name = "internal_id")
-    private long internal_id;
-    @ManyToOne(targetEntity = Moveable.class, fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_moveable")
-    private Moveable moveable;
-
-    @Column(name = "agreement")
-    private String agreement;
-
-    @Column(name = "anonymous")
-    private String anonymous;
-
-    @Column(name = "is_archive")
-    private boolean is_archive;
-
-    @Column(name = "is_storage")
-    private boolean is_storage;
-
-    @ManyToOne(targetEntity = TypeOfWork.class, fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_type_of_work")
-    private TypeOfWork type_of_work;
-
-    @ManyToOne(targetEntity = PlaceWork.class, fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_place_of_work")
-    private PlaceWork placeOfWork;
-
-    @ManyToOne(targetEntity = Experience.class, fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_experience")
-    private Experience experience;
-
-    @ManyToOne(targetEntity = Education.class, fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_education")
-    private Education education;
-
-    @ManyToOne(targetEntity = MaritalStatus.class, fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_marital_status")
-    private MaritalStatus maritalStatus;
-
-    @ManyToOne(targetEntity = Children.class, fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_children")
-    private Children children;
-
-    @ManyToOne(targetEntity = Language.class, fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_languages")
-    private Language languages;
-
-    @ManyToOne(targetEntity = Agency.class, fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_agency")
-    private Agency agency;
+    @Column(name = "predlagaem")
+    private byte[] predlagaem;
 
     @Column(name = "company_name")
-    private String companyName;
+    private String company_name;
 
-    /*driving_licence: [1]
-    0:  "B"
-    - */
-    /*catalogues: [1]
-    0:  {
-    id: 86
-    title: "Транспорт, логистика, ВЭД"
-    positions: [1]
-    0:  {
-    id: 88
-    title: "Автоперевозки"
-    }-
-    -
-    }-
-    - */
-    @Column(name = "profession")
-    private String profession;
+    @Column(name = "company_addr")
+    private String company_addr;
 
-    @Column(name = "company_descr", length = 8000)
-    private String companyDescr;   //firm_activity
+    @Column(name = "vacancy_internale_id")
+    private Long vacancy_internale_id;
 
-    @Column(name = "age_from")
-    private Integer ageFrom;
+    @Column(name = "url")
+    private String url;
 
-    @Column(name = "age_to")
-    private Integer ageTo;
+    @Column(name = "system_id")
+    private Integer systemId;
 
-    @ManyToOne(targetEntity = Gender.class, fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_gender")
-    private Gender gender;
+    @Column(name = "city")
+    private String city;
 
-    @Column(name = "company_url")
-    private String companyUrl;
+    @Column(name = "full_description")
+    private byte[] fullDescription;
 
-    @OneToMany(mappedBy = "vacancylV", fetch = FetchType.LAZY)
-    private List<ProfessionalV> professional;
-
-    @ManyToOne(targetEntity = City.class, fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_city")
-    private City city;
-
-    @Column(name = "last_update")
-    private Date lastUpdate;
-
-    @Column(name = "page")
-    private int page;
-
-    @Column(name = "condition_search")
-    private int conditionSearch;
+    @Column(name = "typeWork")
+    private String typeWork;
 
     public Vacancy() {
         super();
-    }
-
-    public Vacancy(final String name) {
-        super();
-        this.profession = name;
     }
 
     public long getId() {
@@ -169,283 +67,116 @@ public class Vacancy implements Serializable {
         this.id = id;
     }
 
-    public Long getId_client() {
-        return id_client;
+
+    public String getVacancy_name() {
+        return vacancy_name;
     }
 
-    public void setId_client(Long id_client) {
-        this.id_client = id_client;
+    public void setVacancy_name(String vacancy_name) {
+        this.vacancy_name = vacancy_name;
     }
 
-    public Long getDatePublished() {
-        return datePublished;
+    public String getSalary() {
+        return Salary;
     }
 
-    public void setDatePublished(Long datePublished) {
-        this.datePublished = datePublished;
+    public void setSalary(String salary) {
+        Salary = salary;
     }
 
-    public Double getPayment() {
-        return payment;
+    public String getExperience() {
+        return Experience;
     }
 
-    public void setPayment(Double payment) {
-        this.payment = payment;
+    public void setExperience(String experience) {
+        Experience = experience;
     }
 
-    public  byte[] getWork() {
-        return work;
+    public byte[] getNeed_make() {
+        return need_make;
     }
 
-    public void setWork( byte[] work) {
-        this.work = work;
+    public void setNeed_make(byte[] need_make) {
+        this.need_make = need_make;
     }
 
-    public  byte[] getCandidat() {
-        return candidat;
+    public byte[] getNeeds() {
+        return needs;
     }
 
-    public void setCandidat( byte[] candidat) {
-        this.candidat = candidat;
+    public void setNeeds(byte[] needs) {
+        this.needs = needs;
     }
 
-    public Currency getCurrency() {
-        return currency;
+    public byte[] getPredlagaem() {
+        return predlagaem;
     }
 
-    public void setCurrency(Currency currency) {
-        this.currency = currency;
+    public void setPredlagaem(byte[] predlagaem) {
+        this.predlagaem = predlagaem;
     }
 
-    public  byte[] getCompensation() {
-        return compensation;
+    public String getCompany_name() {
+        return company_name;
     }
 
-    public void setCompensation( byte[] compensation) {
-        this.compensation = compensation;
+    public void setCompany_name(String company_name) {
+        this.company_name = company_name;
     }
 
-    public String getAddress() {
-        return address;
+    public String getCompany_addr() {
+        return company_addr;
     }
 
-    public void setAddress(String address) {
-        this.address = address;
+    public void setCompany_addr(String company_addr) {
+        this.company_addr = company_addr;
     }
 
-    public long getDate_pub_to() {
-        return date_pub_to;
+    public Long getVacancy_internale_id() {
+        return vacancy_internale_id;
     }
 
-    public void setDate_pub_to(long date_pub_to) {
-        this.date_pub_to = date_pub_to;
+    public void setVacancy_internale_id(Long vacancy_internale_id) {
+        this.vacancy_internale_id = vacancy_internale_id;
     }
 
-    public Double getPayment_from() {
-        return payment_from;
+    public String getUrl() {
+        return url;
     }
 
-    public void setPayment_from(Double payment_from) {
-        this.payment_from = payment_from;
+    public void setUrl(String url) {
+        this.url = url;
     }
 
-    public long getInternal_id() {
-        return internal_id;
+    public Integer getSystemId() {
+        return systemId;
     }
 
-    public void setInternal_id(long internal_id) {
-        this.internal_id = internal_id;
+    public void setSystemId(Integer systemId) {
+        this.systemId = systemId;
     }
 
-    public Moveable getMoveable() {
-        return moveable;
-    }
-
-    public void setMoveable(Moveable moveable) {
-        this.moveable = moveable;
-    }
-
-    public String getAgreement() {
-        return agreement;
-    }
-
-    public void setAgreement(String agreement) {
-        this.agreement = agreement;
-    }
-
-    public String getAnonymous() {
-        return anonymous;
-    }
-
-    public void setAnonymous(String anonymous) {
-        this.anonymous = anonymous;
-    }
-
-    public boolean is_archive() {
-        return is_archive;
-    }
-
-    public void setIs_archive(boolean is_archive) {
-        this.is_archive = is_archive;
-    }
-
-    public boolean is_storage() {
-        return is_storage;
-    }
-
-    public void setIs_storage(boolean is_storage) {
-        this.is_storage = is_storage;
-    }
-
-    public TypeOfWork getType_of_work() {
-        return type_of_work;
-    }
-
-    public void setType_of_work(TypeOfWork type_of_work) {
-        this.type_of_work = type_of_work;
-    }
-
-    public PlaceWork getPlaceOfWork() {
-        return placeOfWork;
-    }
-
-    public void setPlaceOfWork(PlaceWork placeOfWork) {
-        this.placeOfWork = placeOfWork;
-    }
-
-    public Experience getExperience() {
-        return experience;
-    }
-
-    public void setExperience(Experience experience) {
-        this.experience = experience;
-    }
-
-    public Education getEducation() {
-        return education;
-    }
-
-    public void setEducation(Education education) {
-        this.education = education;
-    }
-
-    public MaritalStatus getMaritalStatus() {
-        return maritalStatus;
-    }
-
-    public void setMaritalStatus(MaritalStatus maritalStatus) {
-        this.maritalStatus = maritalStatus;
-    }
-
-    public Children getChildren() {
-        return children;
-    }
-
-    public void setChildren(Children children) {
-        this.children = children;
-    }
-
-    public Language getLanguages() {
-        return languages;
-    }
-
-    public void setLanguages(Language languages) {
-        this.languages = languages;
-    }
-
-    public Agency getAgency() {
-        return agency;
-    }
-
-    public void setAgency(Agency agency) {
-        this.agency = agency;
-    }
-
-    public String getCompanyName() {
-        return companyName;
-    }
-
-    public void setCompanyName(String companyName) {
-        this.companyName = companyName;
-    }
-
-    public String getProfession() {
-        return profession;
-    }
-
-    public void setProfession(String profession) {
-        this.profession = profession;
-    }
-
-    public String getCompanyDescr() {
-        return companyDescr;
-    }
-
-    public void setCompanyDescr(String companyDescr) {
-        this.companyDescr = companyDescr;
-    }
-
-    public Integer getAgeFrom() {
-        return ageFrom;
-    }
-
-    public void setAgeFrom(Integer ageFrom) {
-        this.ageFrom = ageFrom;
-    }
-
-    public Integer getAgeTo() {
-        return ageTo;
-    }
-
-    public void setAgeTo(Integer ageTo) {
-        this.ageTo = ageTo;
-    }
-
-    public Gender getGender() {
-        return gender;
-    }
-
-    public void setGender(Gender gender) {
-        this.gender = gender;
-    }
-
-    public String getCompanyUrl() {
-        return companyUrl;
-    }
-
-    public void setCompanyUrl(String companyUrl) {
-        this.companyUrl = companyUrl;
-    }
-
-    public City getCity() {
+    public String getCity() {
         return city;
     }
 
-    public void setCity(City city) {
+    public void setCity(String city) {
         this.city = city;
     }
 
-    public Date getLastUpdate() {
-        return lastUpdate;
+    public byte[] getFullDescription() {
+        return fullDescription;
     }
 
-    public void setLastUpdate(Date lastUpdate) {
-        this.lastUpdate = lastUpdate;
+    public void setFullDescription(byte[] fullDescription) {
+        this.fullDescription = fullDescription;
     }
 
-    public int getPage() {
-        return page;
+    public String getTypeWork() {
+        return typeWork;
     }
 
-    public void setPage(int page) {
-        this.page = page;
-    }
-
-    public int getConditionSearch() {
-        return conditionSearch;
-    }
-
-    public void setConditionSearch(int conditionSearch) {
-        this.conditionSearch = conditionSearch;
+    public void setTypeWork(String typeWork) {
+        this.typeWork = typeWork;
     }
 }

@@ -83,6 +83,7 @@
                 <value>org.parser.persistence.model.ProfessionalR</value>
                 <value>org.parser.persistence.model.ProfessionalDetailR</value>
                 <value>org.parser.persistence.model.BaseEducation</value>
+                <value>org.parser.persistence.model.History</value>
 
             </list>
         </property>
