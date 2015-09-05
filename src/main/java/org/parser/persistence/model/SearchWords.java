@@ -21,9 +21,6 @@ public class SearchWords implements Serializable {
     @Column(name = "system")
     private Integer system;
 
-    @OneToMany(mappedBy = "words", fetch = FetchType.LAZY)
-    private List<WordList> wordList;
-
     public SearchWords() {
         super();
     }
@@ -32,15 +29,6 @@ public class SearchWords implements Serializable {
         super();
         this.word_name = name;
         this.system = system;
-    }
-
-
-    public List<WordList> getWordList() {
-        return wordList;
-    }
-
-    public void setWordList(List<WordList> wordList) {
-        this.wordList = wordList;
     }
 
     public long getId() {

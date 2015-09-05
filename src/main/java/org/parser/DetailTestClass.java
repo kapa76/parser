@@ -130,11 +130,8 @@ public class DetailTestClass {
 
                 }
             }
-
             int count = listNumberIndustry.size();
         }
-
-
     }
 }
 

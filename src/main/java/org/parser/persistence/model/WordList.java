@@ -17,18 +17,17 @@ public class WordList implements Serializable {
     @Column(name = "name")
     private String name;
 
-    @ManyToOne(targetEntity = SearchWords.class, fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_search_word")
-    private SearchWords words;
+    @Column(name = "id_search_word")
+    private Long id_search_word;
 
     public WordList() {
         super();
     }
 
-    public WordList(final String name, final SearchWords words) {
+    public WordList(final String name, final Long words) {
         super();
         this.name = name;
-        this.words = words;
+        this.id_search_word = words;
     }
 
     public long getId() {
@@ -47,11 +46,11 @@ public class WordList implements Serializable {
         this.name = name;
     }
 
-    public SearchWords getWords() {
-        return words;
+    public Long getWords() {
+        return id_search_word;
     }
 
-    public void setWords(SearchWords words) {
-        this.words = words;
+    public void setWords(Long words) {
+        this.id_search_word = words;
     }
 }

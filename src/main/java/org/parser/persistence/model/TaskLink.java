@@ -3,7 +3,7 @@ package org.parser.persistence.model;
 import javax.persistence.*;
 import java.io.Serializable;
 
-@Entity(name="task_link")
+@Entity(name = "task_link")
 @Table
 public class TaskLink implements Serializable {
 
@@ -23,13 +23,18 @@ public class TaskLink implements Serializable {
     @Column(name = "html")
     private byte[] html;
 
+    @Column(name = "system_type")
+    private Integer systemType;
+
+    @Column(name = "record_type")
+    private Integer recordType;
+
     @Column(name = "qty_entity")
     private Integer qty_entity;
 
     public TaskLink() {
         super();
     }
-
 
     public long getId() {
         return id;
@@ -69,5 +74,21 @@ public class TaskLink implements Serializable {
 
     public void setQty_entity(Integer qty_entity) {
         this.qty_entity = qty_entity;
+    }
+
+    public Integer getSystemType() {
+        return systemType;
+    }
+
+    public void setSystemType(Integer systemType) {
+        this.systemType = systemType;
+    }
+
+    public Integer getRecordType() {
+        return recordType;
+    }
+
+    public void setRecordType(Integer recordType) {
+        this.recordType = recordType;
     }
 }

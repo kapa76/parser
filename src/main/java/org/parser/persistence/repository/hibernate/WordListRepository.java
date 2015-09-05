@@ -2,14 +2,13 @@ package org.parser.persistence.repository.hibernate;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import org.parser.persistence.model.Gender;
 import org.parser.persistence.model.WordList;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
 @Repository
-public class WordListRepository  extends AbstractRepo {
+public class WordListRepository extends AbstractRepo {
 
     public List<WordList> findAll(int id) {
         return null; //List<SearchWords> sessionFactory.getCurrentSession().createQuery("from search_words p where p.system = :id ").setParameter("id", type).list();
@@ -41,4 +40,7 @@ public class WordListRepository  extends AbstractRepo {
     }
 
 
+    public List<WordList> findWordByIdSearch(long id) {
+        return (List<WordList>) sessionFactory.getCurrentSession().createQuery("from word_list p where p.id_search_word = :id ").setParameter("id", id).list();
+    }
 }

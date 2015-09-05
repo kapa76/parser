@@ -1,6 +1,7 @@
 package org.parser.persistence.kernel.factory;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpResponse;
@@ -12,13 +13,8 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.parser.persistence.kernel.ServiceHH;
-import org.parser.persistence.model.History;
-import org.parser.persistence.model.TaskLink;
-import org.parser.persistence.model.Vacancy;
-import org.parser.persistence.repository.hibernate.HistoryLoadRepository;
-import org.parser.persistence.repository.hibernate.HistoryRepository;
-import org.parser.persistence.repository.hibernate.TaskLinkProcessedRepositoy;
-import org.parser.persistence.repository.hibernate.VacancyRepository;
+import org.parser.persistence.model.*;
+import org.parser.persistence.repository.hibernate.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,9 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 
 @Service
@@ -42,6 +36,10 @@ public class ServiceHHImpl implements ServiceHH {
 
     private final String START_PAGE = "http://hh.ru/search/vacancy?text=&salary=&currency_code=RUR&experience=doesNotMatter&order_by=relevance&search_period=30&items_on_page=20&no_magic=true";
 
+    private int SYSTEM_TYPE = 0;
+    private int VACANCY_TYPE = 0;
+    private int RESUME_TYPE = 1;
+
     @Autowired
     private VacancyRepository vacancyService;
 
@@ -53,6 +51,12 @@ public class ServiceHHImpl implements ServiceHH {
 
     @Autowired
     private TaskLinkProcessedRepositoy taskLinkProcessedRepositoy;
+
+    @Autowired
+    private SearchWordRepository searchWordRepository;
+
+    @Autowired
+    private WordListRepository wordListRepository;
 
     private String get_html_by_link(String url) throws IOException {
         String content = "";
@@ -88,26 +92,104 @@ public class ServiceHHImpl implements ServiceHH {
         //если нет не обработанных вакансий то начинаем поиск заново.
         List<TaskLink> taskLinkListNotProcessed = new ArrayList<>();
         taskLinkListNotProcessed = taskLinkProcessedRepositoy.getNotProcessedLink(0);
-
-        if (taskLinkListNotProcessed.size() == 0) {
-            //если все обработано начинаем новый поиск
+        if (taskLinkListNotProcessed != null && taskLinkListNotProcessed.size() == 0) {
 
 
-        } else {
+        } else {//если все обработано начинаем новый поиск
+            if (!searchWordRepository.isExist(SYSTEM_TYPE)) {
+                buildListForSearch();
+            }
+
             //есть заполненные слова для поиска профессии и отрасли
-            buildListForSearch();
+            List<SearchWords> searchWords = searchWordRepository.findAll(SYSTEM_TYPE);
+            Map<String, List<WordList>> mapSeach = new HashMap<>();
 
-            startFindBySearchWords();
-            HttpClient client = HttpClientBuilder.create().build();
-            HttpGet request = new HttpGet(START_PAGE);
-            HttpResponse response = client.execute(request);
+            //получили мапу для построения запросов поиска
+            for (SearchWords sword : searchWords) {
+                List<WordList> ll = wordListRepository.findWordByIdSearch(sword.getId());
+                mapSeach.put(sword.getWord_name(), ll);
+            }
 
-            int returnCode = response.getStatusLine().getStatusCode();
-            System.out.println("Response Code : " + returnCode);  //200
-            if (returnCode == 200) {
-                String htmlPage = IOUtils.toString(response.getEntity().getContent(), "UTF-8");
+            for (String key : mapSeach.keySet()) {
+                List<WordList> ll = mapSeach.get(key);
+                for (WordList value : ll) {
+
+                    String htmlUrl = startFindBySearchWords(key, value.getName());
+                    HttpClient client = HttpClientBuilder.create().build();
+                    HttpGet request = new HttpGet(htmlUrl);
+                    HttpResponse response = client.execute(request);
+
+                    int returnCode = response.getStatusLine().getStatusCode();
+                    if (returnCode == 200) {
+                        String htmlPage = IOUtils.toString(response.getEntity().getContent(), "UTF-8");
+
+                        saveSearchPageToTaskList(htmlPage, htmlUrl, VACANCY_TYPE);
+
 //            start_vacancy_load(readFile("c:\\repository\\parser\\input_data\\hh\\vacancy\\full.html"));
-                start_vacancy_load(htmlPage);
+                        //start_vacancy_load(htmlPage);
+                    }
+
+
+                }
+
+            }
+        }
+    }
+
+    private void saveSearchPageToTaskList(String htmlPage, String link, int type) {
+        TaskLink tlink = new TaskLink();
+        tlink.setHtml(htmlPage.getBytes());
+        tlink.setLink(link);
+        tlink.setProcessed(false);
+        tlink.setRecordType(type);
+        tlink.setSystemType(SYSTEM_TYPE);
+        Document doc = Jsoup.parse(htmlPage);
+        String company_name = doc.select("div.resumesearch__result-count").text();
+        company_name = company_name.replaceAll(" ", "").replaceAll("\\W", "");
+        Integer qty = Integer.parseInt(company_name);
+        tlink.setQty_entity(qty);
+        taskLinkProcessedRepositoy.create(tlink);
+    }
+
+    private String startFindBySearchWords(String key, String value) {
+        return "http://hh.ru/search/vacancy?items_on_page=100&" + key + "=" + value;
+    }
+
+    private void buildListForSearch() throws IOException {
+        //получение списка отраслей для фильтрации
+
+        String content = "";
+        HttpClient client = HttpClientBuilder.create().build();
+        HttpGet request = new HttpGet("https://api.hh.ru/industries");
+        HttpResponse response = client.execute(request);
+
+        int returnCode = response.getStatusLine().getStatusCode();
+        System.out.println("Response Code : " + returnCode);  //200
+
+        if (returnCode == 200) {
+            content = IOUtils.toString(response.getEntity().getContent(), "UTF-8");
+
+            Gson gson = new Gson();
+            JsonElement obj = gson.fromJson(content, JsonElement.class);
+
+            JsonArray ar = obj.getAsJsonArray();
+            List<String> listNumberIndustry = new ArrayList<>();
+            Iterator<JsonElement> itemRoot = ar.iterator();
+            SearchWords sw = new SearchWords("industry", SYSTEM_TYPE);
+            searchWordRepository.create(sw);
+            while (itemRoot.hasNext()) {
+                JsonElement elem = itemRoot.next();
+                listNumberIndustry.add(elem.getAsJsonObject().get("id").getAsString());  //корень забрали
+
+                JsonArray subRoot = elem.getAsJsonObject().get("industries").getAsJsonArray();
+                Iterator<JsonElement> item = subRoot.iterator();
+
+                while (item.hasNext()) {
+                    JsonElement e = item.next();
+                    String name = e.getAsJsonObject().get("id").getAsString();
+                    WordList wl = new WordList(name, sw.getId());
+                    wordListRepository.create(wl);
+                }
             }
         }
     }
@@ -138,9 +220,8 @@ public class ServiceHHImpl implements ServiceHH {
 //        }
     }
 
-
     private void logHistory(String msg, String url, int systemtype, int type) {
-        historyRepository.create(new History(msg, url, systemtype, type));
+        historyRepository.create(new History(msg.getBytes(), url, systemtype, type));
     }
 
     private void parse_html_page(String htmlContent, String vacancyPageUrl) {
