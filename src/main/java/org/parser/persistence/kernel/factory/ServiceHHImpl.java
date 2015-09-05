@@ -1,5 +1,7 @@
 package org.parser.persistence.kernel.factory;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -10,9 +12,10 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.parser.persistence.kernel.ServiceHH;
-import org.parser.persistence.model.History;
+import org.parser.persistence.model.TaskLink;
 import org.parser.persistence.model.Vacancy;
 import org.parser.persistence.repository.hibernate.HistoryRepository;
+import org.parser.persistence.repository.hibernate.TaskLinkProcessedRepositoy;
 import org.parser.persistence.repository.hibernate.VacancyRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,10 +24,10 @@ import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 
 @Service
@@ -43,6 +46,9 @@ public class ServiceHHImpl implements ServiceHH {
     @Autowired
     public HistoryRepository historyRepository;
 
+    @Autowired
+    private TaskLinkProcessedRepositoy taskLinkProcessedRepositoy;
+
     private String get_html_by_link(String url) throws IOException {
         String content = "";
         HttpClient client = HttpClientBuilder.create().build();
@@ -58,7 +64,7 @@ public class ServiceHHImpl implements ServiceHH {
         return content;
     }
 
-    private String readFile( String file ) throws IOException {
+    /*private String readFile( String file ) throws IOException {
         BufferedReader reader = new BufferedReader( new FileReader(file));
         String         line = null;
         StringBuilder  stringBuilder = new StringBuilder();
@@ -70,20 +76,33 @@ public class ServiceHHImpl implements ServiceHH {
         }
 
         return stringBuilder.toString();
-    }
+    }  */
 
     @Override
     public void startVacancy() throws IOException {
-        HttpClient client = HttpClientBuilder.create().build();
-        HttpGet request = new HttpGet(START_PAGE);
-        HttpResponse response = client.execute(request);
+        //если нет не обработанных вакансий то начинаем поиск заново.
+        List<TaskLink> taskLinkListNotProcessed = new ArrayList<>();
+        taskLinkListNotProcessed = taskLinkProcessedRepositoy.getNotProcessedLink(0);
+        if (taskLinkListNotProcessed.size() == 0) {
+            //если все обработано начинаем новый поиск
 
-        int returnCode = response.getStatusLine().getStatusCode();
-        System.out.println("Response Code : " + returnCode);  //200
-        if (returnCode == 200) {
-            String htmlPage = IOUtils.toString(response.getEntity().getContent(), "UTF-8");
-            start_vacancy_load(readFile("c:\\repository\\parser\\input_data\\hh\\vacancy\\full.html"));
-//            start_vacancy_load(htmlPage);
+
+        } else {
+            //есть заполненные слова для поиска профессии и отрасли
+            buildListForSearch();
+
+            startFindBySearchWords();
+            HttpClient client = HttpClientBuilder.create().build();
+            HttpGet request = new HttpGet(START_PAGE);
+            HttpResponse response = client.execute(request);
+
+            int returnCode = response.getStatusLine().getStatusCode();
+            System.out.println("Response Code : " + returnCode);  //200
+            if (returnCode == 200) {
+                String htmlPage = IOUtils.toString(response.getEntity().getContent(), "UTF-8");
+//            start_vacancy_load(readFile("c:\\repository\\parser\\input_data\\hh\\vacancy\\full.html"));
+                start_vacancy_load(htmlPage);
+            }
         }
     }
 
@@ -97,8 +116,8 @@ public class ServiceHHImpl implements ServiceHH {
         while (iterator.hasNext()) {
             Element elem = iterator.next();
             String vacancyPageUrl = elem.select("div.search-result-item__head").first().getElementsByAttribute("href").first().attr("href");
-//            String contentPage = get_html_by_link(vacancyPageUrl);
-            String contentPage = readFile("c:\\repository\\parser\\input_data\\hh\\vacancy\\vacancy.html");
+            String contentPage = get_html_by_link(vacancyPageUrl);
+//            String contentPage = readFile("c:\\repository\\parser\\input_data\\hh\\vacancy\\vacancy.html");
             try {
                 parse_html_page(contentPage, vacancyPageUrl);
             } catch (Exception e) {
@@ -145,7 +164,7 @@ public class ServiceHHImpl implements ServiceHH {
         vacancy.setExperience(Experience);
 
 //        vacancy.setNeed_make(need_make.getBytes());
-//        vacancy.setNeeds(needs.getBytes());                                       f(
+//        vacancy.setNeeds(needs.getBytes());
 //        vacancy.setPredlagaem(predlagaem.getBytes());
 
         vacancy.setTypeWork(typeWork);
@@ -155,6 +174,7 @@ public class ServiceHHImpl implements ServiceHH {
         vacancy.setCompany_name(company_name);
         vacancy.setCompany_addr(company_addr);
         vacancy.setUrl(vacancyPageUrl);
+        vacancy.setSystemId(1);
 //        vacancy.setVacancy_internale_id(vacancy_internale_id);
 
         if (!vacancyService.findByLink(vacancy.getUrl(), 1)) {
@@ -170,5 +190,26 @@ public class ServiceHHImpl implements ServiceHH {
     @Override
     public void startResume() {
 
+    }
+
+    private void BuildVocabulary() throws IOException {
+        //получение списка отраслей для фильтрации
+
+        String content = "";
+        HttpClient client = HttpClientBuilder.create().build();
+        HttpGet request = new HttpGet("https://api.hh.ru/industries");
+        HttpResponse response = client.execute(request);
+
+        int returnCode = response.getStatusLine().getStatusCode();
+        System.out.println("Response Code : " + returnCode);  //200
+
+        if (returnCode == 200) {
+            content = IOUtils.toString(response.getEntity().getContent(), "UTF-8");
+
+            Gson gson = new Gson();
+            JsonElement obj = gson.fromJson(content, JsonElement.class);
+
+
+        }
     }
 }

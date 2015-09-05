@@ -11,10 +11,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.parser.persistence.kernel.ServiceSJ;
-import org.parser.persistence.model.History;
-import org.parser.persistence.model.PreviosWorkHistory;
-import org.parser.persistence.model.Resume;
-import org.parser.persistence.model.Vacancy;
+import org.parser.persistence.model.*;
 import org.parser.persistence.repository.hibernate.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,8 +19,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -45,25 +40,10 @@ public class ServiceSJImpl implements ServiceSJ {
     public CityRepository cityService;
 
     @Autowired
-    public HistoryRepository historyRepository;
+    public HistoryLoadRepository historyRepository;
 
     @Autowired
     public AgencyRepository agencyService;
-
-    @Autowired
-    private BusinessTripRepository businessTripService;
-
-    @Autowired
-    private ChildrenRepository childrenService;
-
-    @Autowired
-    private ChildrenResumeRepository childrenResumeService;
-
-    @Autowired
-    private CitizenshipRepository citizenshipService;
-
-    @Autowired
-    private CurrencyRepository currencyService;
 
     @Autowired
     private EducationRepository educationService;
@@ -78,64 +58,7 @@ public class ServiceSJImpl implements ServiceSJ {
     private EducationTypeResumeRepository educationTypeResumeService;
 
     @Autowired
-    private ExperienceRepository experienceService;
-
-    @Autowired
-    private GenderRepository genderService;
-
-    @Autowired
-    private GenderResumeRepository genderResumeService;
-
-    @Autowired
-    private LangLevelRepository langLevelService;
-
-    @Autowired
-    private LangLevelResumeRepository langLevelResumeService;
-
-    @Autowired
-    private LanguageRepository languageService;
-
-    @Autowired
-    private LanguageResumeRepository languageResumeService;
-
-    @Autowired
-    private MaritalStatusRepository maritalStatusService;
-
-    @Autowired
-    private MaritalStatusResumeRepository maritalStatusResumeService;
-
-    @Autowired
-    private MaritalStatusResumeGenderRepository maritalStatusResumeGenderService;
-
-    @Autowired
-    private MoveableRepository moveableService;
-
-    @Autowired
-    private PlaceRepository placeService;
-
-    @Autowired
-    private PlaceDetailRepository placeDetailService;
-
-    @Autowired
-    private PlaceWorkRepository placeWorkService;
-
-    @Autowired
     private PreviosWorkHistoryRepository previosWorkHistoryService;
-
-    @Autowired
-    private ProfessionalRepository professionalService;
-
-    @Autowired
-    private ProfessionalDetailRepository professionalDetailService;
-
-    @Autowired
-    private PropertiesRRepository propertiesRService;
-
-    @Autowired
-    private PropertiesVRepository propertiesVService;
-
-    @Autowired
-    private PublishedResumeRepository publishedResumeService;
 
     @Autowired
     private QueuerRepository queuerService;
@@ -147,39 +70,42 @@ public class ServiceSJImpl implements ServiceSJ {
     private ResumeRepository resumeService;
 
     @Autowired
-    private SiteRepository siteService;
-
-    @Autowired
-    private SocialLinksResumeRepository socialLinksResumeService;
-
-    @Autowired
-    private TypeOfWorkRepository typeOfWorkService;
-
-    @Autowired
     private VacancyRepository vacancyService;
 
     @Autowired
-    private WorkTypeRepository workTypeService;
-
-    @Autowired
-    private ProfessionalVRepository professionalVRepository;
-
-    @Autowired
-    private ProfessionalDetailVRepository professionalDetailVRepository;
+    private TaskLinkProcessedRepositoy taskLinkProcessedRepositoy;
 
     @Override
     public void startVacancy() throws IOException {
-        HttpClient client = HttpClientBuilder.create().build();
-        HttpPost request = new HttpPost(START_PAGE);
-        HttpResponse response = client.execute(request);
 
-        int returnCode = response.getStatusLine().getStatusCode();
-        System.out.println("Response Code : " + returnCode);  //200
-        if (returnCode == 200) {
-            String htmlPage = IOUtils.toString(response.getEntity().getContent(), "UTF-8");
 
-            start_vacancy_load(readFile("c:\\repository\\parser\\input_data\\superjob\\vacancy\\full_vacancy.html"));
-            //start_vacancy_load(htmlPage);
+        //если нет не обработанных вакансий то начинаем поиск заново.
+        List<TaskLink> taskLinkListNotProcessed = new ArrayList<>();
+        taskLinkListNotProcessed = taskLinkProcessedRepositoy.getNotProcessedLink(0);
+        if(taskLinkListNotProcessed.size() == 0){
+            //если все обработано начинаем новый поиск
+
+
+
+
+        } else {
+            //есть заполненные слова для поиска профессии и отрасли
+            buildListForSearch();
+
+            startFindBySearchWords();
+
+            HttpClient client = HttpClientBuilder.create().build();
+            HttpPost request = new HttpPost(START_PAGE);
+            HttpResponse response = client.execute(request);
+
+            int returnCode = response.getStatusLine().getStatusCode();
+            System.out.println("Response Code : " + returnCode);  //200
+            if (returnCode == 200) {
+                String htmlPage = IOUtils.toString(response.getEntity().getContent(), "UTF-8");
+
+//            start_vacancy_load(readFile("c:\\repository\\parser\\input_data\\superjob\\vacancy\\full_vacancy.html"));
+                start_vacancy_load(htmlPage);
+            }
         }
     }
 
@@ -210,8 +136,8 @@ public class ServiceSJImpl implements ServiceSJ {
             Element elem = iterator.next();
             String vacancyPageUrl = elem.select("h2.VacancyListElement_position").first().getElementsByAttribute("href").first().attr("href");
 
-            String contentPage = readFile("c:\\repository\\parser\\input_data\\superjob\\vacancy\\once_vacacy.html");
-            //String contentPage = get_html_by_link(vacancyPageUrl);
+//            String contentPage = readFile("c:\\repository\\parser\\input_data\\superjob\\vacancy\\once_vacacy.html");
+            String contentPage = get_html_by_link(vacancyPageUrl);
 
             try {
                 parse_html_page(contentPage, vacancyPageUrl);
@@ -307,8 +233,8 @@ public class ServiceSJImpl implements ServiceSJ {
         System.out.println("Response Code : " + returnCode);  //200
         if (returnCode == 200) {
             String htmlPage = IOUtils.toString(response.getEntity().getContent(), "UTF-8");
-            start_resume_load(readFile("c:\\repository\\parser\\input_data\\superjob\\resume\\full_resume.html"));
-//            start_resume_load(htmlPage);
+//            start_resume_load(readFile("c:\\repository\\parser\\input_data\\superjob\\resume\\full_resume.html"));
+            start_resume_load(htmlPage);
         }
     }
 
@@ -321,8 +247,8 @@ public class ServiceSJImpl implements ServiceSJ {
         while (iterator.hasNext()) {
             Element elem = iterator.next();
             String vacancyPageUrl = elem.select("h2.ResumeListElement_post").first().getElementsByAttribute("href").first().attr("href");
-            String contentPage = readFile("c:\\repository\\parser\\input_data\\superjob\\resume\\once_resume.html");
-//            String contentPage = get_html_by_link(vacancyPageUrl);
+//            String contentPage = readFile("c:\\repository\\parser\\input_data\\superjob\\resume\\once_resume.html");
+            String contentPage = get_html_by_link(vacancyPageUrl);
             parse_resume_html_page(contentPage, vacancyPageUrl);
         }
 
@@ -390,7 +316,7 @@ public class ServiceSJImpl implements ServiceSJ {
 //            vacancyService.create(vacancy);
 //        }
     }
-
+       /*
     private String readFile(String file) throws IOException {
         BufferedReader reader = new BufferedReader(new FileReader(file));
         String line = null;
@@ -403,6 +329,6 @@ public class ServiceSJImpl implements ServiceSJ {
         }
 
         return stringBuilder.toString();
-    }
+    }  */
 
 }
