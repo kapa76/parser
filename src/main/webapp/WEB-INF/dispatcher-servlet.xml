@@ -88,6 +88,7 @@
                 <value>org.parser.persistence.model.HistoryLoad</value>
                 <value>org.parser.persistence.model.SearchWords</value>
                 <value>org.parser.persistence.model.WordList</value>
+                <value>org.parser.persistence.model.History</value>
 
             </list>
         </property>

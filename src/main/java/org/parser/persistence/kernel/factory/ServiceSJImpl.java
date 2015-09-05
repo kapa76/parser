@@ -40,7 +40,10 @@ public class ServiceSJImpl implements ServiceSJ {
     public CityRepository cityService;
 
     @Autowired
-    public HistoryLoadRepository historyRepository;
+    public HistoryLoadRepository historyLoadRepository;
+
+    @Autowired
+    public HistoryRepository historyRepository;
 
     @Autowired
     public AgencyRepository agencyService;
@@ -82,17 +85,15 @@ public class ServiceSJImpl implements ServiceSJ {
         //если нет не обработанных вакансий то начинаем поиск заново.
         List<TaskLink> taskLinkListNotProcessed = new ArrayList<>();
         taskLinkListNotProcessed = taskLinkProcessedRepositoy.getNotProcessedLink(0);
-        if(taskLinkListNotProcessed.size() == 0){
+        if (taskLinkListNotProcessed.size() == 0) {
             //если все обработано начинаем новый поиск
-
-
 
 
         } else {
             //есть заполненные слова для поиска профессии и отрасли
-            buildListForSearch();
+//            buildListForSearch();
 
-            startFindBySearchWords();
+//            startFindBySearchWords();
 
             HttpClient client = HttpClientBuilder.create().build();
             HttpPost request = new HttpPost(START_PAGE);
@@ -154,7 +155,7 @@ public class ServiceSJImpl implements ServiceSJ {
     }
 
     private void logHistory(String msg, String url, int systemtype, int type) {
-        historyRepository.create(new History(msg, url, systemtype, type));
+        historyRepository.create(new History(msg.getBytes(), url, 1, type));
     }
 
     private String get_next_link_from_page(Document doc) {

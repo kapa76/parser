@@ -12,8 +12,10 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.parser.persistence.kernel.ServiceHH;
+import org.parser.persistence.model.History;
 import org.parser.persistence.model.TaskLink;
 import org.parser.persistence.model.Vacancy;
+import org.parser.persistence.repository.hibernate.HistoryLoadRepository;
 import org.parser.persistence.repository.hibernate.HistoryRepository;
 import org.parser.persistence.repository.hibernate.TaskLinkProcessedRepositoy;
 import org.parser.persistence.repository.hibernate.VacancyRepository;
@@ -45,6 +47,9 @@ public class ServiceHHImpl implements ServiceHH {
 
     @Autowired
     public HistoryRepository historyRepository;
+
+    @Autowired
+    public HistoryLoadRepository historyLoadRepository;
 
     @Autowired
     private TaskLinkProcessedRepositoy taskLinkProcessedRepositoy;
@@ -83,6 +88,7 @@ public class ServiceHHImpl implements ServiceHH {
         //если нет не обработанных вакансий то начинаем поиск заново.
         List<TaskLink> taskLinkListNotProcessed = new ArrayList<>();
         taskLinkListNotProcessed = taskLinkProcessedRepositoy.getNotProcessedLink(0);
+
         if (taskLinkListNotProcessed.size() == 0) {
             //если все обработано начинаем новый поиск
 
