@@ -12,6 +12,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.parser.common.ParsedVacancies;
 import org.parser.persistence.kernel.ServiceHH;
 import org.parser.persistence.model.*;
 import org.parser.persistence.repository.hibernate.*;
@@ -41,6 +42,8 @@ public class ServiceHHImpl implements ServiceHH {
     private int RESUME_TYPE = 1;
     private String PREFIX = "http://hh.ru";
 
+    private HttpClient client;
+
     @Autowired
     private VacancyRepository vacancyService;
 
@@ -61,13 +64,9 @@ public class ServiceHHImpl implements ServiceHH {
 
     private String get_html_by_link(String url) throws IOException {
         String content = "";
-        HttpClient client = HttpClientBuilder.create().build();
         HttpGet request = new HttpGet(url);
         HttpResponse response = client.execute(request);
-
         int returnCode = response.getStatusLine().getStatusCode();
-        System.out.println("Response Code : " + returnCode);  //200
-
         if (returnCode == 200) {
             content = IOUtils.toString(response.getEntity().getContent(), "UTF-8");
         }
@@ -76,13 +75,17 @@ public class ServiceHHImpl implements ServiceHH {
 
     @Override
     public void startVacancy() throws IOException {
+        if (client == null) {
+            client = HttpClientBuilder.create().build();
+        }
         //если нет не обработанных вакансий то начинаем поиск заново.
         List<TaskLink> taskLinkListNotProcessed = new ArrayList<>();
         taskLinkListNotProcessed = taskLinkProcessedRepositoy.getNotProcessedLink(0);
         if (taskLinkListNotProcessed != null && taskLinkListNotProcessed.size() > 0) {
             for (TaskLink task : taskLinkListNotProcessed) {
 
-                start_vacancy_load(new String(task.getHtml()));
+                //корень поиска - начальная страница со всеми списками
+                start_vacancy_load(new String(task.getHtml()), task);
 
                 task.setProcessed(true);
                 taskLinkProcessedRepositoy.update(task);
@@ -115,19 +118,11 @@ public class ServiceHHImpl implements ServiceHH {
                     int returnCode = response.getStatusLine().getStatusCode();
                     if (returnCode == 200) {
                         String htmlPage = IOUtils.toString(response.getEntity().getContent(), "UTF-8");
-
                         saveSearchPageToTaskList(htmlPage, htmlUrl, VACANCY_TYPE);
-
-//            start_vacancy_load(readFile("c:\\repository\\parser\\input_data\\hh\\vacancy\\full.html"));
-                        //start_vacancy_load(htmlPage);
                     }
-
-
                 }
-
             }
         }
-
     }
 
     private void saveSearchPageToTaskList(String htmlPage, String link, int type) {
@@ -153,7 +148,7 @@ public class ServiceHHImpl implements ServiceHH {
         //получение списка отраслей для фильтрации
 
         String content = "";
-        HttpClient client = HttpClientBuilder.create().build();
+        //HttpClient client = HttpClientBuilder.create().build();
         HttpGet request = new HttpGet("https://api.hh.ru/industries");
         HttpResponse response = client.execute(request);
 
@@ -188,41 +183,72 @@ public class ServiceHHImpl implements ServiceHH {
         }
     }
 
-    public void start_vacancy_load(String htmlLoaded) throws IOException {
-        //забираем по одной ссылке со страницы и каждую грузим.
+    private ParsedVacancies parse_page(String htmlLoaded) throws IOException {
 
         Document doc = Jsoup.parse(htmlLoaded);
+        ParsedVacancies parsedElems = new ParsedVacancies(doc);
+
         Elements elems = doc.select("div.search-result-item");
-        int countOnPage = elems.size();
+
+        parsedElems.setSize(elems.size());
         Iterator<Element> iterator = elems.iterator();
+        Integer qty = 0;
         while (iterator.hasNext()) {
             Element elem = iterator.next();
             String vacancyPageUrl = elem.select("div.search-result-item__head").first().getElementsByAttribute("href").first().attr("href");
             String contentPage = get_html_by_link(vacancyPageUrl);
-//            String contentPage = readFile("c:\\repository\\parser\\input_data\\hh\\vacancy\\vacancy.html");
             try {
                 parse_html_page(contentPage, vacancyPageUrl);
+                qty++;
+                parsedElems.setQty(qty);
             } catch (Exception e) {
                 logHistory(e.getMessage(), vacancyPageUrl, 1, 0);
+                logger.debug(e.getMessage());
             }
         }
+        return parsedElems;
+    }
 
-        try {
-            String next_link = get_next_link_from_page(doc);
-            if (next_link.length() > 0) {
-                String html = get_html_by_link(PREFIX + next_link);
-                start_vacancy_load(html);
+    public void start_vacancy_load(String html, TaskLink task) throws IOException {
+        //забираем по одной ссылке со страницы и каждую грузим.
+        boolean needWork = true;
+        Integer count = 0;
+
+        HistoryLoad historyLoad = new HistoryLoad();
+        historyLoad.setStartTime(new Date());
+        while (needWork) {
+            try {
+                ParsedVacancies p = parse_page(html);
+
+                count += p.getQty();
+
+                Document doc = p.getDoc();
+                String next_link = get_next_link_from_page(doc);
+                html = "";
+                if (next_link.length() > 0) {
+                    count++;
+                    html = get_html_by_link(PREFIX + next_link);
+                } else {
+                    needWork = false;
+                }
+            } catch (Exception ex) {
+                logger.debug(ex.getMessage());
             }
-        } catch(Exception ex){
-            logger.debug(ex.getMessage());
-
         }
+        historyLoad.setEndTime(new Date());
+        historyLoad.setTaskLink(task);
+        historyLoad.setRecord_type(0);
+        historyLoad.setQty_entity(count);
+        historyLoad.setHtml(html.getBytes());
+        historyLoad.setProcessed(true);
+        historyLoadRepository.create(historyLoad);
+
     }
 
     private void logHistory(String msg, String url, int systemtype, int type) {
         try {
             historyRepository.create(new History(msg.getBytes(), url, systemtype, type));
-        } catch(Exception e){
+        } catch (Exception e) {
 
         }
     }
@@ -259,22 +285,27 @@ public class ServiceHHImpl implements ServiceHH {
 
         vacancy.setTypeWork(typeWork);
         vacancy.setFullDescription(full_description.getBytes());
-
+        vacancy.setCity(city);
 
         vacancy.setCompany_name(company_name);
         vacancy.setCompany_addr(company_addr);
         vacancy.setUrl(vacancyPageUrl);
         vacancy.setSystemId(1);
-//        vacancy.setVacancy_internale_id(vacancy_internale_id);
+        vacancy.setVacancy_internale_id(getLongInternalVacancyIdFromUrl(vacancyPageUrl));
 
         if (!vacancyService.findByLink(vacancy.getUrl(), 1)) {
             vacancyService.create(vacancy);
         }
     }
 
+    private Long getLongInternalVacancyIdFromUrl(String vacancyPageUrl) {
+        String longId = vacancyPageUrl.replaceAll("[^0-9]+", "");
+        return Long.parseLong(longId);
+    }
+
     private String get_next_link_from_page(Document doc) {
         String next_url = doc.select("div.b-pager__next").first().getElementsByAttribute("href").first().attr("href");
-        return next_url;  // doc.select("div.b-pager__next").first().getElementsByAttribute("href").first().attr("href");
+        return next_url;
     }
 
     @Override
