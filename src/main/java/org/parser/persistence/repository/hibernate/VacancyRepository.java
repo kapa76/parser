@@ -61,8 +61,8 @@ public class VacancyRepository extends AbstractRepo {
         else return false;
     }
 
-    public boolean findByLink(String url, int type) {
-        Integer count = (Integer) sessionFactory.getCurrentSession().createQuery("select count(*) from vacancy p where p.url = :link and p.systemId = :id").setParameter("link", url).setParameter("id", type).uniqueResult();
+    public boolean findByLink(String url, Integer systemId) {
+        Long count = (Long) sessionFactory.getCurrentSession().createQuery("select count(*) from vacancy p where p.url = :link and p.systemId = :systemId").setParameter("link", url).setParameter("systemId", systemId).uniqueResult();
         if (count > 0)
             return true;
         else return false;

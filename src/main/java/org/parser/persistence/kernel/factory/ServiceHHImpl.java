@@ -39,6 +39,7 @@ public class ServiceHHImpl implements ServiceHH {
     private int SYSTEM_TYPE = 0;
     private int VACANCY_TYPE = 0;
     private int RESUME_TYPE = 1;
+    private String PREFIX = "http://hh.ru";
 
     @Autowired
     private VacancyRepository vacancyService;
@@ -73,27 +74,19 @@ public class ServiceHHImpl implements ServiceHH {
         return content;
     }
 
-    /*private String readFile( String file ) throws IOException {
-        BufferedReader reader = new BufferedReader( new FileReader(file));
-        String         line = null;
-        StringBuilder  stringBuilder = new StringBuilder();
-        //String         ls = System.getProperty("line.separator");
-
-        while( ( line = reader.readLine() ) != null ) {
-            stringBuilder.append( line );
-            //stringBuilder.append( ls );
-        }
-
-        return stringBuilder.toString();
-    }  */
-
     @Override
     public void startVacancy() throws IOException {
         //если нет не обработанных вакансий то начинаем поиск заново.
         List<TaskLink> taskLinkListNotProcessed = new ArrayList<>();
         taskLinkListNotProcessed = taskLinkProcessedRepositoy.getNotProcessedLink(0);
-        if (taskLinkListNotProcessed != null && taskLinkListNotProcessed.size() == 0) {
+        if (taskLinkListNotProcessed != null && taskLinkListNotProcessed.size() > 0) {
+            for (TaskLink task : taskLinkListNotProcessed) {
 
+                start_vacancy_load(new String(task.getHtml()));
+
+                task.setProcessed(true);
+                taskLinkProcessedRepositoy.update(task);
+            }
 
         } else {//если все обработано начинаем новый поиск
             if (!searchWordRepository.isExist(SYSTEM_TYPE)) {
@@ -134,6 +127,7 @@ public class ServiceHHImpl implements ServiceHH {
 
             }
         }
+
     }
 
     private void saveSearchPageToTaskList(String htmlPage, String link, int type) {
@@ -213,15 +207,24 @@ public class ServiceHHImpl implements ServiceHH {
             }
         }
 
-//        String next_link = get_next_link_from_page(doc);
-//        if (next_link.length() > 0) {
-//            String html = get_html_by_link(next_link);
-//            start_vacancy_load(html);
-//        }
+        try {
+            String next_link = get_next_link_from_page(doc);
+            if (next_link.length() > 0) {
+                String html = get_html_by_link(PREFIX + next_link);
+                start_vacancy_load(html);
+            }
+        } catch(Exception ex){
+            logger.debug(ex.getMessage());
+
+        }
     }
 
     private void logHistory(String msg, String url, int systemtype, int type) {
-        historyRepository.create(new History(msg.getBytes(), url, systemtype, type));
+        try {
+            historyRepository.create(new History(msg.getBytes(), url, systemtype, type));
+        } catch(Exception e){
+
+        }
     }
 
     private void parse_html_page(String htmlContent, String vacancyPageUrl) {
@@ -270,8 +273,8 @@ public class ServiceHHImpl implements ServiceHH {
     }
 
     private String get_next_link_from_page(Document doc) {
-        String next_url = doc.select("div.b-pager__next").first().select("span.b-pager__next-arrow").first().getElementsByAttribute("href").first().attr("href");
-        return next_url;
+        String next_url = doc.select("div.b-pager__next").first().getElementsByAttribute("href").first().attr("href");
+        return next_url;  // doc.select("div.b-pager__next").first().getElementsByAttribute("href").first().attr("href");
     }
 
     @Override

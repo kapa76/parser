@@ -31,6 +31,6 @@ public class TaskLinkProcessedRepositoy extends AbstractRepo {
     }
 
     public List<TaskLink> getNotProcessedLink(int i) {
-        return null;
+        return (List<TaskLink>) sessionFactory.getCurrentSession().createQuery("from task_link p where p.systemType = :id and p.processed = false").setParameter("id", i).list();
     }
 }
