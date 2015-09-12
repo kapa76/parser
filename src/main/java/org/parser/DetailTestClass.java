@@ -5,9 +5,17 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.params.HttpClientParams;
+import org.apache.http.cookie.CookieSpec;
+import org.apache.http.cookie.CookieSpecFactory;
+import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpParams;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -16,6 +24,7 @@ import org.jsoup.select.Elements;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 
 
@@ -43,10 +52,37 @@ public class DetailTestClass {
 
     public static void main(String[] args) throws IOException {
 
-        BuildVocabulary();
-        /*String content = "";
-        HttpClient client = HttpClientBuilder.create().build();
-        HttpGet request = new HttpGet(START_PAGE);
+
+        String content = "";
+        DefaultHttpClient client = new DefaultHttpClient();
+        client.getCookieSpecs().register("lenient", new CookieSpecFactory() {
+            public CookieSpec newInstance(HttpParams params) {
+                return new LenientCookieSpec();
+            }
+        });
+        HttpClientParams.setCookiePolicy(client.getParams(), "lenient");
+
+        HttpGet request = new HttpGet("http://hh.ru/search/vacancy?items_on_page=100&industry=51.675");
+        //List<NameValuePair> params = new LinkedList<NameValuePair>();
+
+//        HttpParams params=new BasicHttpParams();
+
+//        params.setParameter("Set-Cookie", "_xsrf=1de7669a35596983f198be3343ec3450; Domain=.hh.ru; Path=/");
+//        params.setParameter("Set-Cookie", "_xsrf=1de7669a35596983f198be3343ec3450; Path=/");
+//        params.setParameter("Set-Cookie", "crypted_id=; Domain=.hh.ru; expires=Fri, 12 Sep 2014 21:41:38 GMT; Path=/");
+//        params.setParameter("Set-Cookie", "crypted_id=; expires=Fri, 12 Sep 2014 21:41:38 GMT; Path=/");
+//        params.setParameter("Set-Cookie", "regions=1; expires=Sun, 11 Sep 2016 21:41:38 GMT; Path=/");
+//        params.setParameter("Set-Cookie", "hhrole=anonymous; Path=/");
+//        params.setParameter("Set-Cookie", "unique_banner_user=1442094098.22446796855321; expires=Sun, 13 Sep 2015 21:41:38 GMT; Path=/");
+//        params.setParameter("Expires", "Sat, 12 Sep 2015 21:41:37 GMT");
+//        params.setParameter("Cache-Control", "no-cache");
+//        params.setParameter("X-Request-ID", "1442094098169624c04150f21df2e4f2");
+//        params.setParameter("X-Frame-Options", "SAMEORIGIN");
+//        params.setParameter("X-Content-Type-Options", "nosniff");
+
+//        request.setParams(params);
+
+
         HttpResponse response = client.execute(request);
 
         int returnCode = response.getStatusLine().getStatusCode();
@@ -54,20 +90,11 @@ public class DetailTestClass {
 
         if (returnCode == 200) {
             content = IOUtils.toString(response.getEntity().getContent(), "UTF-8");
-            Document doc = Jsoup.parse(content);
 
-            Elements elems = doc.select("div.search-result-item");
 
-            int countOnPage = elems.size();
-            Iterator<Element> iterator = elems.iterator();
-            while (iterator.hasNext()) {
-                Element elem = iterator.next();
+            int len = content.length();
 
-                String vacancyPageUrl = elem.select("div.search-result-item__head").first().getElementsByAttribute("href").first().attr("href");
-                String contentPage = get_html_by_link(vacancyPageUrl);
-                parse_html_page(contentPage);
-            }
-        }  */
+        }
     }
 
     private static String parse_html_page(String htmlContent) {
