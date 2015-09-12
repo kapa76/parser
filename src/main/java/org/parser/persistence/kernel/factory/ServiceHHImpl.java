@@ -42,7 +42,7 @@ public class ServiceHHImpl implements ServiceHH {
     private int RESUME_TYPE = 1;
     private String PREFIX = "http://hh.ru";
 
-    private HttpClient client;
+    //private HttpClient client;
 
     @Autowired
     private VacancyRepository vacancyService;
@@ -64,6 +64,7 @@ public class ServiceHHImpl implements ServiceHH {
 
     private String get_html_by_link(String url) throws IOException {
         String content = "";
+        HttpClient client = HttpClientBuilder.create().build();
         HttpGet request = new HttpGet(url);
         HttpResponse response = client.execute(request);
         int returnCode = response.getStatusLine().getStatusCode();
@@ -75,9 +76,7 @@ public class ServiceHHImpl implements ServiceHH {
 
     @Override
     public void startVacancy() throws IOException {
-        if (client == null) {
-            client = HttpClientBuilder.create().build();
-        }
+
         //если нет не обработанных вакансий то начинаем поиск заново.
         List<TaskLink> taskLinkListNotProcessed = new ArrayList<>();
         taskLinkListNotProcessed = taskLinkProcessedRepositoy.getNotProcessedLink(0);
@@ -148,7 +147,7 @@ public class ServiceHHImpl implements ServiceHH {
         //получение списка отраслей для фильтрации
 
         String content = "";
-        //HttpClient client = HttpClientBuilder.create().build();
+        HttpClient client = HttpClientBuilder.create().build();
         HttpGet request = new HttpGet("https://api.hh.ru/industries");
         HttpResponse response = client.execute(request);
 
@@ -304,8 +303,7 @@ public class ServiceHHImpl implements ServiceHH {
     }
 
     private String get_next_link_from_page(Document doc) {
-        String next_url = doc.select("div.b-pager__next").first().getElementsByAttribute("href").first().attr("href");
-        return next_url;
+        return doc.select("div.b-pager__next").first().getElementsByAttribute("href").first().attr("href");
     }
 
     @Override

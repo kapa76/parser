@@ -4,7 +4,7 @@ import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
 
-@Entity(name = "histoy")
+@Entity(name = "history")
 @Table
 public class History implements Serializable {
 
