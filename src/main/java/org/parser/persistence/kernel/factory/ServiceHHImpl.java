@@ -18,6 +18,7 @@ import org.parser.common.ParsedVacancies;
 import org.parser.persistence.kernel.ServiceHH;
 import org.parser.persistence.model.*;
 import org.parser.persistence.repository.hibernate.*;
+import org.parser.threads.ThreadVacancy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +28,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 
 @Service
@@ -45,6 +49,10 @@ public class ServiceHHImpl implements ServiceHH {
     private String PREFIX = "http://hh.ru";
 
     //private HttpClient client;
+
+    private ExecutorService threads = Executors.newCachedThreadPool();
+    private int sizePool = 20;
+    private int qty_queue = 0;
 
     @Autowired
     private VacancyRepository vacancyService;
@@ -78,49 +86,92 @@ public class ServiceHHImpl implements ServiceHH {
 
     @Override
     public void startVacancy() throws IOException {
+        try {
+            if (!processTask()) {
+                //если все обработано начинаем новый поиск
+                buildListVacancy();
+            }
+        } catch(InterruptedException e){
+            logger.debug("Interrupt exception: " + e.getMessage());
+        }
+    }
 
+    private boolean processTask() throws IOException, InterruptedException {
+        boolean value = false;
         //если нет не обработанных вакансий то начинаем поиск заново.
+        boolean processed = false;
         List<TaskLink> taskLinkListNotProcessed = new ArrayList<>();
         taskLinkListNotProcessed = taskLinkProcessedRepositoy.getNotProcessedLink(0);
         if (taskLinkListNotProcessed != null && taskLinkListNotProcessed.size() > 0) {
-            for (TaskLink task : taskLinkListNotProcessed) {
+            processed = true;
+        }
+
+        int processListSize = taskLinkListNotProcessed.size();
+        int processedQty = 0;
+        while(processed){
+            //for (TaskLink task : taskLinkListNotProcessed) {
+
+                List<ThreadVacancy> localTh = new ArrayList<ThreadVacancy>();
+
+                for(int i = 0; i < sizePool; i++) {
+
+                    ThreadVacancy vacReader = new ThreadVacancy(new String(taskLinkListNotProcessed.get(processedQty).getHtml()), taskLinkListNotProcessed.get(processedQty));
+
+                    vacReader.setVacancyService(vacancyService);
+                    vacReader.setTaskLinkProcessedRepositoy(taskLinkProcessedRepositoy);
+                    vacReader.setHistoryRepository(historyRepository);
+                    vacReader.setHistoryLoadRepository(historyLoadRepository);
+
+                    localTh.add(vacReader);
+                    processedQty++;
+                    if(processedQty == processListSize - 1) {
+
+                        processed = false;
+                        break;
+                    }
+                }
+
+                List<Future<String>> answers = threads.invokeAll(localTh);
 
                 //корень поиска - начальная страница со всеми списками
-                start_vacancy_load1(new String(task.getHtml()), task);
-
+                /* start_vacancy_load(new String(task.getHtml()), task);
                 task.setProcessed(true);
-                taskLinkProcessedRepositoy.update(task);
-            }
+                taskLinkProcessedRepositoy.update(task); */
 
-        } else {//если все обработано начинаем новый поиск
-            if (!searchWordRepository.isExist(SYSTEM_TYPE)) {
-                buildListForSearch();
-            }
+            value = true;
+        }
 
-            //есть заполненные слова для поиска профессии и отрасли
-            List<SearchWords> searchWords = searchWordRepository.findAll(SYSTEM_TYPE);
-            Map<String, List<WordList>> mapSeach = new HashMap<>();
+        return value;
+    }
 
-            //получили мапу для построения запросов поиска
-            for (SearchWords sword : searchWords) {
-                List<WordList> ll = wordListRepository.findWordByIdSearch(sword.getId());
-                mapSeach.put(sword.getWord_name(), ll);
-            }
+    private void buildListVacancy() throws IOException {
+        if (!searchWordRepository.isExist(SYSTEM_TYPE)) {
+            buildListForSearch();
+        }
 
-            for (String key : mapSeach.keySet()) {
-                List<WordList> ll = mapSeach.get(key);
-                for (WordList value : ll) {
+        //есть заполненные слова для поиска профессии и отрасли
+        List<SearchWords> searchWords = searchWordRepository.findAll(SYSTEM_TYPE);
+        Map<String, List<WordList>> mapSeach = new HashMap<>();
 
-                    String htmlUrl = startFindBySearchWords(key, value.getName());
-                    HttpClient client = HttpClientBuilder.create().build();
-                    HttpGet request = new HttpGet(htmlUrl);
-                    HttpResponse response = client.execute(request);
+        //получили мапу для построения запросов поиска
+        for (SearchWords sword : searchWords) {
+            List<WordList> ll = wordListRepository.findWordByIdSearch(sword.getId());
+            mapSeach.put(sword.getWord_name(), ll);
+        }
 
-                    int returnCode = response.getStatusLine().getStatusCode();
-                    if (returnCode == 200) {
-                        String htmlPage = IOUtils.toString(response.getEntity().getContent(), "UTF-8");
-                        saveSearchPageToTaskList(htmlPage, htmlUrl, VACANCY_TYPE);
-                    }
+        for (String key : mapSeach.keySet()) {
+            List<WordList> ll = mapSeach.get(key);
+            for (WordList value : ll) {
+
+                String htmlUrl = startFindBySearchWords(key, value.getName());
+                HttpClient client = HttpClientBuilder.create().build();
+                HttpGet request = new HttpGet(htmlUrl);
+                HttpResponse response = client.execute(request);
+
+                int returnCode = response.getStatusLine().getStatusCode();
+                if (returnCode == 200) {
+                    String htmlPage = IOUtils.toString(response.getEntity().getContent(), "UTF-8");
+                    saveSearchPageToTaskList(htmlPage, htmlUrl, VACANCY_TYPE);
                 }
             }
         }
@@ -283,52 +334,52 @@ public class ServiceHHImpl implements ServiceHH {
 
     }
 
-    public void start_vacancy_load1(String html, TaskLink task) throws IOException {
-        //забираем по одной ссылке со страницы и каждую грузим.
-        boolean needWork = true;
-        Integer count = 0;
+    /*  public void start_vacancy_load1(String html, TaskLink task) throws IOException {
+          //забираем по одной ссылке со страницы и каждую грузим.
+          boolean needWork = true;
+          Integer count = 0;
 
-        if(task.getQty_entity() < 2000) {
-            List<HtmlVacPage> htmlPages = new LinkedList<HtmlVacPage>();
-            HistoryLoad historyLoad = new HistoryLoad();
-            historyLoad.setStartTime(new Date());
-            String next_link = task.getLink();
-            while (needWork) {
-                try {
+          if(task.getQty_entity() < 2000) {
+              List<HtmlVacPage> htmlPages = new LinkedList<HtmlVacPage>();
+              HistoryLoad historyLoad = new HistoryLoad();
+              historyLoad.setStartTime(new Date());
+              String next_link = task.getLink();
+              while (needWork) {
+                  try {
 
-                    List<HtmlVacPage> htmlVacPages = parse_page_test(html, next_link);
-                    htmlPages.addAll(htmlVacPages);
+                      List<HtmlVacPage> htmlVacPages = parse_page_test(html, next_link);
+                      htmlPages.addAll(htmlVacPages);
 
-                    Document doc = htmlVacPages.get(htmlVacPages.size()-1).getDoc();
-                    next_link = get_next_link_from_page(doc);
-                    html = "";
-                    if (next_link.length() > 0) {
-                        html = get_html_by_link(PREFIX + next_link);
-                    } else {
-                        needWork = false;
-                    }
-                } catch (Exception ex) {
-                    logger.debug(ex.getMessage());
-                }
-            }
+                      Document doc = htmlVacPages.get(htmlVacPages.size()-1).getDoc();
+                      next_link = get_next_link_from_page(doc);
+                      html = "";
+                      if (next_link.length() > 0) {
+                          html = get_html_by_link(PREFIX + next_link);
+                      } else {
+                          needWork = false;
+                      }
+                  } catch (Exception ex) {
+                      logger.debug(ex.getMessage());
+                  }
+              }
 
-            for(HtmlVacPage p : htmlPages){
-                parse_html_page_test(p.getDoc(), p.getUrl());
-            }
+              for(HtmlVacPage p : htmlPages){
+                  parse_html_page_test(p.getDoc(), p.getUrl());
+              }
 
 
 
-            logger.debug("End load root page: " + task.getLink());
-            historyLoad.setEndTime(new Date());
-            historyLoad.setTaskLink(task);
-            historyLoad.setRecord_type(VACANCY_TYPE);
-            historyLoad.setQty_entity(count);
-            historyLoad.setHtml(html.getBytes());
-            historyLoad.setProcessed(true);
-            historyLoadRepository.create(historyLoad);
-        }
-    }
-
+              logger.debug("End load root page: " + task.getLink());
+              historyLoad.setEndTime(new Date());
+              historyLoad.setTaskLink(task);
+              historyLoad.setRecord_type(VACANCY_TYPE);
+              historyLoad.setQty_entity(count);
+              historyLoad.setHtml(html.getBytes());
+              historyLoad.setProcessed(true);
+              historyLoadRepository.create(historyLoad);
+          }
+      }
+  */
     private void logHistory(String msg, String url, int systemtype, int type) {
         try {
             historyRepository.create(new History(msg.getBytes(), url, systemtype, type));
@@ -377,58 +428,63 @@ public class ServiceHHImpl implements ServiceHH {
         vacancy.setSystemId(SYSTEM_TYPE);
         //vacancy.setVacancy_internale_id(getLongInternalVacancyIdFromUrl(vacancyPageUrl));
 
-        if (!vacancyService.findByLink(vacancy.getUrl(), SYSTEM_TYPE)) {
+        //if (!vacancyService.findByLink(vacancy.getUrl(), SYSTEM_TYPE)) {
+        try {
             vacancyService.create(vacancy);
             logger.debug("Save vacancy: " + vacancy.getUrl());
+        } catch (Exception e) {
+            logger.debug("Save vacancy exception: " + e.getMessage());
         }
+        //}
     }
 
-    private void parse_html_page_test(Document doc, String vacancyPageUrl) {
-        // разбор целиком вакансии
-        //Document doc = Jsoup.parse(htmlContent);
-        String company_name = doc.select("div.companyname").first().getElementsByAttribute("href").first().text();
-        String Salary = doc.select("td.l-content-colum-1").first().select("div.l-paddings").text();
-        String city = doc.select("td.l-content-colum-2").select("div.l-paddings").text();
-        String Experience = doc.select("td.l-content-colum-3").select("div.l-paddings").text();
+    /*
+        private void parse_html_page_test(Document doc, String vacancyPageUrl) {
+            // разбор целиком вакансии
+            //Document doc = Jsoup.parse(htmlContent);
+            String company_name = doc.select("div.companyname").first().getElementsByAttribute("href").first().text();
+            String Salary = doc.select("td.l-content-colum-1").first().select("div.l-paddings").text();
+            String city = doc.select("td.l-content-colum-2").select("div.l-paddings").text();
+            String Experience = doc.select("td.l-content-colum-3").select("div.l-paddings").text();
 
-        String full_description = doc.select("div.b-vacancy-desc-wrapper").text();
-        String typeWork = doc.select("div.b-vacancy-employmentmode").first().select("div.l-content-paddings").text(); //полная занятост, полный день.
-        String vacancy_name = doc.select("h1.title").text();  // Менеджер проектов SMM
+            String full_description = doc.select("div.b-vacancy-desc-wrapper").text();
+            String typeWork = doc.select("div.b-vacancy-employmentmode").first().select("div.l-content-paddings").text(); //полная занятост, полный день.
+            String vacancy_name = doc.select("h1.title").text();  // Менеджер проектов SMM
 
-        String company_addr = "";
-        if (doc.select("div.VacancyView_location").size() > 0) {
-            doc.select("div.VacancyView_location").first().select("span.h_color_gray").first().text();
+            String company_addr = "";
+            if (doc.select("div.VacancyView_location").size() > 0) {
+                doc.select("div.VacancyView_location").first().select("span.h_color_gray").first().text();
+            }
+
+    //        String vacancy_internal_number = doc.select("div.VacancyView_number").first().text();
+    //        String[] splt = vacancy_internal_number.split(" ");
+    //        Long vacancy_internale_id = Long.parseLong(splt[2]);
+            ////////////////////////////////////////////////////////
+            Vacancy vacancy = new Vacancy();
+            vacancy.setVacancy_name(vacancy_name);
+            vacancy.setSalary(Salary);
+            vacancy.setExperience(Experience);
+
+    //        vacancy.setNeed_make(need_make.getBytes());
+    //        vacancy.setNeeds(needs.getBytes());
+    //        vacancy.setPredlagaem(predlagaem.getBytes());
+
+            vacancy.setTypeWork(typeWork);
+            vacancy.setFullDescription(full_description.getBytes());
+            vacancy.setCity(city);
+
+            vacancy.setCompany_name(company_name);
+            vacancy.setCompany_addr(company_addr);
+            vacancy.setUrl(vacancyPageUrl);
+            vacancy.setSystemId(SYSTEM_TYPE);
+            //vacancy.setVacancy_internale_id(getLongInternalVacancyIdFromUrl(vacancyPageUrl));
+
+            if (!vacancyService.findByLink(vacancy.getUrl(), SYSTEM_TYPE)) {
+                vacancyService.create(vacancy);
+                logger.debug("Save vacancy: " + vacancy.getUrl());
+            }
         }
-
-//        String vacancy_internal_number = doc.select("div.VacancyView_number").first().text();
-//        String[] splt = vacancy_internal_number.split(" ");
-//        Long vacancy_internale_id = Long.parseLong(splt[2]);
-        ////////////////////////////////////////////////////////
-        Vacancy vacancy = new Vacancy();
-        vacancy.setVacancy_name(vacancy_name);
-        vacancy.setSalary(Salary);
-        vacancy.setExperience(Experience);
-
-//        vacancy.setNeed_make(need_make.getBytes());
-//        vacancy.setNeeds(needs.getBytes());
-//        vacancy.setPredlagaem(predlagaem.getBytes());
-
-        vacancy.setTypeWork(typeWork);
-        vacancy.setFullDescription(full_description.getBytes());
-        vacancy.setCity(city);
-
-        vacancy.setCompany_name(company_name);
-        vacancy.setCompany_addr(company_addr);
-        vacancy.setUrl(vacancyPageUrl);
-        vacancy.setSystemId(SYSTEM_TYPE);
-        //vacancy.setVacancy_internale_id(getLongInternalVacancyIdFromUrl(vacancyPageUrl));
-
-        if (!vacancyService.findByLink(vacancy.getUrl(), SYSTEM_TYPE)) {
-            vacancyService.create(vacancy);
-            logger.debug("Save vacancy: " + vacancy.getUrl());
-        }
-    }
-
+    */
     private Long getLongInternalVacancyIdFromUrl(String vacancyPageUrl) {
         String longId = vacancyPageUrl.replaceAll("[^0-9]+", "");
         return Long.parseLong(longId);
